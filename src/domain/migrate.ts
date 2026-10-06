@@ -28,6 +28,8 @@ export function migrateDoc(raw: unknown): CharacterDoc {
   identity.raceBonusChoices ??= [];
   identity.classes = identity.classes.filter((c) => c.classId && c.level > 0);
   doc.feats ??= [];
+  doc.photo ??= "";
+  doc.lore ??= "";
 
   return doc as unknown as CharacterDoc;
 }

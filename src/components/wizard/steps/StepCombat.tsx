@@ -2,6 +2,7 @@
 
 import { useWizard } from "../context";
 import { Card, Field, Formula, NumberInput } from "@/components/ui";
+import { useT, useData, useFormat } from "@/lib/i18n/client";
 import {
   armorClass,
   armorWarnings,
@@ -12,33 +13,33 @@ import {
   speed,
   totalLevel,
 } from "@/domain/calc";
-import { getRace } from "@/data";
-import { ft } from "@/domain/units";
+import { alignmentKeyFor } from "./StepIdentity";
 
 export function StepCombat() {
   const { doc, update } = useWizard();
-  const ac = armorClass(doc);
-  const init = initiative(doc);
-  const hp = maxHp(doc);
-  const warnings = armorWarnings(doc);
+  const t = useT();
+  const d = useData();
+  const fmt = useFormat();
+  const ac = armorClass(doc, d);
+  const init = initiative(doc, d);
+  const hp = maxHp(doc, d);
+  const warnings = armorWarnings(doc, d);
   const pb = pbOf(doc);
   const entries = classEntries(doc);
-  const race = getRace(doc.identity.raceId);
+  const race = d.getRace(doc.identity.raceId);
   const level = totalLevel(doc);
+  const alignmentKey = alignmentKeyFor(doc.identity.alignment);
 
   return (
     <div className="flex flex-col gap-5">
       {entries.length === 0 || !race ? (
         <Card>
-          <p className="text-sm text-zinc-400">
-            Escolha raça e classe na etapa 1 para que os valores de combate
-            sejam calculados corretamente.
-          </p>
+          <p className="text-sm text-zinc-400">{t("wizard.combat.pickFirst")}</p>
         </Card>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card title="Classe de Armadura" accent="sky">
+        <Card title={t("wizard.combat.ac")} accent="sky">
           <div className="flex items-baseline justify-between">
             <span className="text-4xl font-bold text-zinc-100">{ac.value}</span>
           </div>
@@ -58,30 +59,35 @@ export function StepCombat() {
           )}
         </Card>
 
-        <Card title="Iniciativa">
+        <Card title={t("wizard.combat.initiative")}>
           <Formula value={init.value} parts={init.parts} />
         </Card>
 
-        <Card title="Deslocamento">
-          <p className="text-4xl font-bold text-zinc-100">{ft(speed(doc))}</p>
+        <Card title={t("wizard.combat.speed")}>
+          <p className="text-4xl font-bold text-zinc-100">
+            {fmt.distance(speed(doc, d))}
+          </p>
           <p className="mt-2 text-xs text-zinc-500">
-            {race?.name} · {ft(race?.speed ?? 30)} base
+            {t("wizard.combat.baseSpeed", {
+              name: race?.name ?? "",
+              value: fmt.distance(race?.speed ?? 30),
+            })}
           </p>
         </Card>
 
-        <Card title="Pontos de Vida máximos" accent="rose" className="sm:col-span-2">
+        <Card title={t("wizard.combat.maxHp")} accent="rose" className="sm:col-span-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-4xl font-bold text-zinc-100">{hp.value}</span>
             <button
               type="button"
               onClick={() =>
-                update((d) => {
-                  d.combat.hpCurrent = hp.value;
+                update((doc) => {
+                  doc.combat.hpCurrent = hp.value;
                 })
               }
               className="rounded-md border border-emerald-700 px-3 py-1.5 text-xs text-emerald-400 transition hover:bg-emerald-950/50"
             >
-              Preencher PV atuais com o máximo
+              {t("wizard.combat.fillHp")}
             </button>
           </div>
           <ul className="mt-3 flex flex-col gap-1 text-xs text-zinc-500">
@@ -93,20 +99,20 @@ export function StepCombat() {
           </ul>
         </Card>
 
-        <Card title="Bônus de proficiência">
+        <Card title={t("wizard.combat.proficiency")}>
           <p className="text-4xl font-bold text-amber-400">+{pb}</p>
           <p className="mt-2 text-xs text-zinc-500">
-            Calculado pelo nível total ({level}): 2 + ⌊(nível − 1) ÷ 4⌋
+            {t("wizard.combat.pbHint", { level })}
           </p>
         </Card>
 
-        <Card title="PV atuais" accent="rose">
-          <Field label="PV atuais">
+        <Card title={t("wizard.combat.currentHp")} accent="rose">
+          <Field label={t("wizard.combat.currentHp")}>
             <NumberInput
               value={doc.combat.hpCurrent}
               onChange={(n) =>
-                update((d) => {
-                  d.combat.hpCurrent = n;
+                update((doc) => {
+                  doc.combat.hpCurrent = n;
                 })
               }
               min={0}
@@ -115,13 +121,13 @@ export function StepCombat() {
           </Field>
         </Card>
 
-        <Card title="PV temporários" accent="rose">
-          <Field label="PV temporários">
+        <Card title={t("wizard.combat.tempHp")} accent="rose">
+          <Field label={t("wizard.combat.tempHp")}>
             <NumberInput
               value={doc.combat.hpTemp}
               onChange={(n) =>
-                update((d) => {
-                  d.combat.hpTemp = n;
+                update((doc) => {
+                  doc.combat.hpTemp = n;
                 })
               }
               min={0}
@@ -130,20 +136,22 @@ export function StepCombat() {
           </Field>
         </Card>
 
-        <Card title="Alinhamento e XP">
+        <Card title={t("wizard.combat.alignmentXp")}>
           <div className="flex flex-col gap-2 text-sm text-zinc-300">
-            <span>Alinhamento: {doc.identity.alignment || "não definido"}</span>
-            <span>XP: {doc.identity.xp}</span>
+            <span>
+              {t("wizard.combat.alignment", {
+                value: alignmentKey
+                  ? t(alignmentKey)
+                  : doc.identity.alignment || t("wizard.alignment.none"),
+              })}
+            </span>
+            <span>{t("wizard.combat.xp", { n: fmt.num(doc.identity.xp) })}</span>
           </div>
         </Card>
       </div>
 
-      <Card title="Dica para a sessão">
-        <p className="text-sm text-zinc-400">
-          Depois de finalizar a criação, a ficha mostrará uma barra rápida com
-          CA, PV, iniciativa e deslocamento — você poderá ajustar os PV com um
-          toque durante o jogo.
-        </p>
+      <Card title={t("wizard.combat.tipTitle")}>
+        <p className="text-sm text-zinc-400">{t("wizard.combat.tip")}</p>
       </Card>
     </div>
   );

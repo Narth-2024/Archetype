@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useT } from "@/lib/i18n/client";
 
 export default function NewCharacterPage() {
+  const t = useT();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -20,10 +22,10 @@ export default function NewCharacterPage() {
         }
         const { id } = await res.json();
         if (!cancelled && id) window.location.replace(`/character/${id}/edit`);
-        else if (!cancelled) setError("Não foi possível criar o personagem.");
+        else if (!cancelled) setError("pages.new.createFailed");
       })
       .catch(() => {
-        if (!cancelled) setError("Falha de conexão ao criar.");
+        if (!cancelled) setError("pages.new.connectionFailed");
       });
     return () => {
       cancelled = true;
@@ -34,13 +36,13 @@ export default function NewCharacterPage() {
     <main className="flex min-h-60 flex-col items-center justify-center gap-3">
       {error ? (
         <>
-          <p className="text-sm text-red-400">{error}</p>
+          <p className="text-sm text-red-400">{t(error)}</p>
           <Link href="/" className="text-sm text-amber-500 underline">
-            Voltar
+            {t("common.back")}
           </Link>
         </>
       ) : (
-        <p className="text-sm text-zinc-400">Criando personagem...</p>
+        <p className="text-sm text-zinc-400">{t("pages.new.creating")}</p>
       )}
     </main>
   );

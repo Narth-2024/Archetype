@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Card, Field, TextInput } from "@/components/ui";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useT } from "@/lib/i18n/client";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
+  const t = useT();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -27,14 +29,14 @@ export default function LoginPage() {
         const data = (await res.json().catch(() => null)) as {
           error?: string;
         } | null;
-        setError(data?.error ?? "Falha ao entrar.");
+        setError(data?.error ?? t("pages.auth.signInFailed"));
         return;
       }
       const next = new URLSearchParams(window.location.search).get("next");
       const target = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
       router.push(target);
     } catch {
-      setError("Falha de conexão.");
+      setError(t("pages.auth.connectionFailed"));
     } finally {
       setBusy(false);
     }
@@ -44,12 +46,12 @@ export default function LoginPage() {
     <main className="flex min-h-screen flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-5 flex items-center justify-between">
-          <h1 className="title-gold text-2xl font-bold">Archetype</h1>
+          <h1 className="title-gold text-2xl font-bold">{t("app.name")}</h1>
           <ThemeToggle />
         </div>
-        <Card title="Entrar" accent="amber">
+        <Card title={t("pages.auth.signIn")} accent="amber">
           <form onSubmit={submit} className="flex flex-col gap-3">
-            <Field label="Usuário">
+            <Field label={t("pages.auth.username")}>
               <TextInput
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -58,7 +60,7 @@ export default function LoginPage() {
                 required
               />
             </Field>
-            <Field label="Senha">
+            <Field label={t("pages.auth.password")}>
               <TextInput
                 type="password"
                 value={password}
@@ -73,16 +75,16 @@ export default function LoginPage() {
               disabled={busy}
               className="btn-primary mt-1 rounded-md px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50"
             >
-              {busy ? "Entrando..." : "Entrar"}
+              {busy ? t("pages.auth.signingIn") : t("pages.auth.signIn")}
             </button>
           </form>
           <p className="mt-4 text-center text-sm text-zinc-500">
-            Não tem conta?{" "}
+            {t("pages.auth.noAccount")}{" "}
             <Link
               href="/register"
               className="text-amber-500 transition hover:text-amber-400"
             >
-              Criar conta
+              {t("pages.auth.createAccount")}
             </Link>
           </p>
         </Card>

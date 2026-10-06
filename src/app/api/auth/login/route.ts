@@ -6,8 +6,10 @@ import {
   verifyLogin,
   SESSION_COOKIE,
 } from "@/lib/auth";
+import { getI18n } from "@/lib/i18n/server";
 
 export async function POST(request: Request) {
+  const { t } = await getI18n();
   const body = (await request.json().catch(() => null)) as {
     username?: string;
     password?: string;
@@ -21,7 +23,7 @@ export async function POST(request: Request) {
   const ok = verifyLogin(password, row?.password_hash);
   if (!row || !ok) {
     return NextResponse.json(
-      { error: "Usuário ou senha incorretos." },
+      { error: t("api.badCredentials") },
       { status: 401 },
     );
   }

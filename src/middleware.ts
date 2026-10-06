@@ -8,6 +8,7 @@ function isPublic(pathname: string): boolean {
     PUBLIC_PAGES.includes(pathname) ||
     pathname.startsWith("/api/auth") ||
     pathname === "/api/health" ||
+    pathname === "/api/prefs" ||
     pathname.startsWith("/_next") ||
     pathname.includes(".")
   );

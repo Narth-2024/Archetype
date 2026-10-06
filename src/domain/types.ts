@@ -111,6 +111,8 @@ export type CharacterDoc = {
     hpTemp: number;
   };
   notes: string;
+  photo?: string;
+  lore?: string;
 };
 
 export type CharacterSummary = {

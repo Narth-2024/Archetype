@@ -2,7 +2,7 @@
 
 import { useWizard } from "../context";
 import { Badge, Card, NumberInput, Toggle } from "@/components/ui";
-import { CLASSES, getSpell, spellsForClass } from "@/data";
+import { useT, useData, useFormat } from "@/lib/i18n/client";
 import type { ClassDef, SpellDef } from "@/data";
 import {
   classEntries,
@@ -11,19 +11,18 @@ import {
   spellSlots,
   totalLevel,
 } from "@/domain/calc";
-import { ftText } from "@/domain/units";
 
-const LEVEL_NAMES = [
-  "Truques",
-  "1º nível",
-  "2º nível",
-  "3º nível",
-  "4º nível",
-  "5º nível",
-  "6º nível",
-  "7º nível",
-  "8º nível",
-  "9º nível",
+const LEVEL_KEYS = [
+  "wizard.spells.level0",
+  "wizard.spells.level1",
+  "wizard.spells.level2",
+  "wizard.spells.level3",
+  "wizard.spells.level4",
+  "wizard.spells.level5",
+  "wizard.spells.level6",
+  "wizard.spells.level7",
+  "wizard.spells.level8",
+  "wizard.spells.level9",
 ];
 
 function slotKey(level: number, source: "full" | "pact" | undefined) {
@@ -32,57 +31,56 @@ function slotKey(level: number, source: "full" | "pact" | undefined) {
 
 export function StepSpells() {
   const { doc, update } = useWizard();
+  const t = useT();
+  const d = useData();
+  const fmt = useFormat();
 
   const casterClasses: ClassDef[] = [];
   for (const e of classEntries(doc)) {
-    const cls = CLASSES.find((c) => c.id === e.classId);
+    const cls = d.CLASSES.find((c) => c.id === e.classId);
     if (cls && cls.spellcaster !== "none") casterClasses.push(cls);
   }
 
   if (casterClasses.length === 0) {
     return (
-      <Card title="Conjuração de magias" accent="violet">
-        <p className="text-sm text-zinc-400">
-          Nenhuma de suas classes conjura magias com slots. Escolha mago,
-          clérigo, druida, bardo, feiticeiro, bruxo, paladino ou patrulheiro na
-          etapa 1 — ou pule esta etapa.
-        </p>
+      <Card title={t("wizard.spells.castingTitle")} accent="violet">
+        <p className="text-sm text-zinc-400">{t("wizard.spells.noCaster")}</p>
       </Card>
     );
   }
 
   const catalogMap = new Map<string, SpellDef>();
   for (const cls of casterClasses) {
-    for (const spell of spellsForClass(cls.id)) {
+    for (const spell of d.spellsForClass(cls.id)) {
       if (!catalogMap.has(spell.id)) catalogMap.set(spell.id, spell);
     }
   }
   const catalog = [...catalogMap.values()];
 
-  const dc = spellSaveDc(doc);
-  const atk = spellAttackBonus(doc);
-  const { groups, used } = spellSlots(doc);
+  const dc = spellSaveDc(doc, d);
+  const atk = spellAttackBonus(doc, d);
+  const { groups, used } = spellSlots(doc, d);
   const level = totalLevel(doc);
 
   function toggleKnown(spellId: string) {
-    update((d) => {
-      d.spellcasting.known = d.spellcasting.known.includes(spellId)
-        ? d.spellcasting.known.filter((s) => s !== spellId)
-        : [...d.spellcasting.known, spellId];
+    update((doc) => {
+      doc.spellcasting.known = doc.spellcasting.known.includes(spellId)
+        ? doc.spellcasting.known.filter((s) => s !== spellId)
+        : [...doc.spellcasting.known, spellId];
     });
   }
 
   function togglePrepared(spellId: string) {
-    update((d) => {
-      d.spellcasting.prepared = d.spellcasting.prepared.includes(spellId)
-        ? d.spellcasting.prepared.filter((s) => s !== spellId)
-        : [...d.spellcasting.prepared, spellId];
+    update((doc) => {
+      doc.spellcasting.prepared = doc.spellcasting.prepared.includes(spellId)
+        ? doc.spellcasting.prepared.filter((s) => s !== spellId)
+        : [...doc.spellcasting.prepared, spellId];
     });
   }
 
   function setUsed(key: string, value: number, max: number) {
-    update((d) => {
-      d.spellcasting.slotsUsed[key] = Math.min(max, Math.max(0, value));
+    update((doc) => {
+      doc.spellcasting.slotsUsed[key] = Math.min(max, Math.max(0, value));
     });
   }
 
@@ -95,12 +93,14 @@ export function StepSpells() {
     <div className="flex flex-col gap-5">
       <div className="grid gap-4 sm:grid-cols-2">
         <Card
-          title={`Espaços de magia (${casterClasses.map((c) => c.name).join(" + ")})`}
+          title={t("wizard.spells.slotsTitle", {
+            classes: casterClasses.map((c) => c.name).join(" + "),
+          })}
           accent="violet"
         >
           {groups.length === 0 ? (
             <p className="text-sm text-zinc-500">
-              Sem espaços no nível {level} (meio conjurador começa no nível 2).
+              {t("wizard.spells.noSlots", { level })}
             </p>
           ) : (
             <div className="flex flex-wrap gap-3">
@@ -113,10 +113,12 @@ export function StepSpells() {
                     className="rounded-md border border-zinc-800 p-3 text-center"
                   >
                     <p className="text-xs text-zinc-500">
-                      {g.level}º nível{g.source === "pact" ? " (pacto)" : ""}
+                      {g.source === "pact"
+                        ? t("wizard.spells.slotLevelPact", { level: g.level })
+                        : t("wizard.spells.slotLevel", { level: g.level })}
                     </p>
                     <p className="my-1 text-xl font-bold text-zinc-100">
-                      {Math.max(0, g.max - current)}/{g.max}
+                      {fmt.num(Math.max(0, g.max - current))}/{fmt.num(g.max)}
                     </p>
                     <NumberInput
                       value={current}
@@ -124,7 +126,9 @@ export function StepSpells() {
                       min={0}
                       max={g.max}
                     />
-                    <p className="mt-1 text-[10px] text-zinc-600">usados</p>
+                    <p className="mt-1 text-[10px] text-zinc-600">
+                      {t("wizard.spells.used")}
+                    </p>
                   </div>
                 );
               })}
@@ -132,24 +136,30 @@ export function StepSpells() {
           )}
         </Card>
 
-        <Card title="Conjuração" accent="violet">
+        <Card title={t("wizard.spells.casting")} accent="violet">
           <div className="flex flex-col gap-3">
             {dc && (
               <div>
-                <p className="text-xs text-zinc-500">CD de salvamento</p>
+                <p className="text-xs text-zinc-500">
+                  {t("wizard.spells.saveDc")}
+                </p>
                 <p className="text-3xl font-bold text-zinc-100">{dc.value}</p>
                 <p className="text-xs text-zinc-600">
-                  8 + proficiência + atributo
+                  {t("wizard.spells.saveDcFormula")}
                 </p>
               </div>
             )}
             {atk && (
               <div>
-                <p className="text-xs text-zinc-500">Ataque mágico</p>
+                <p className="text-xs text-zinc-500">
+                  {t("wizard.spells.spellAttack")}
+                </p>
                 <p className="text-3xl font-bold text-amber-400">
                   +{atk.value}
                 </p>
-                <p className="text-xs text-zinc-600">proficiência + atributo</p>
+                <p className="text-xs text-zinc-600">
+                  {t("wizard.spells.spellAttackFormula")}
+                </p>
               </div>
             )}
           </div>
@@ -157,17 +167,17 @@ export function StepSpells() {
       </div>
 
       <Card
-        title={`Magias conhecidas (${doc.spellcasting.known.length}) — selecione no catálogo abaixo`}
+        title={t("wizard.spells.knownTitle", {
+          n: fmt.num(doc.spellcasting.known.length),
+        })}
         accent="violet"
       >
         {doc.spellcasting.known.length === 0 ? (
-          <p className="text-sm text-zinc-500">
-            Nenhuma magia selecionada ainda.
-          </p>
+          <p className="text-sm text-zinc-500">{t("wizard.spells.noKnown")}</p>
         ) : (
           <div className="flex flex-col gap-2">
             {doc.spellcasting.known
-              .map((id) => getSpell(id))
+              .map((id) => d.getSpell(id))
               .filter((s): s is NonNullable<typeof s> => Boolean(s))
               .sort((a, b) => a.level - b.level || a.name.localeCompare(b.name))
               .map((spell) => (
@@ -179,14 +189,16 @@ export function StepSpells() {
                     {spell.name}
                   </span>
                   <Badge color="blue">
-                    {spell.level === 0 ? "Truque" : `${spell.level}º nível`}
+                    {spell.level === 0
+                      ? t("wizard.spells.cantrip")
+                      : t(LEVEL_KEYS[spell.level])}
                   </Badge>
                   <Badge>{spell.school}</Badge>
                   <div className="ml-auto w-40">
                     <Toggle
                       checked={doc.spellcasting.prepared.includes(spell.id)}
                       onChange={() => togglePrepared(spell.id)}
-                      label="Preparada"
+                      label={t("wizard.spells.prepared")}
                     />
                   </div>
                 </div>
@@ -196,18 +208,29 @@ export function StepSpells() {
       </Card>
 
       <div className="flex flex-col gap-3">
-        {LEVEL_NAMES.map((label, level) => {
+        {LEVEL_KEYS.map((levelKey, level) => {
           const spells = byLevel[level];
           if (!spells?.length) return null;
           return (
-            <Card key={level} title={`${label} (${spells.length})`} accent="violet">
+            <Card
+              key={level}
+              title={t("wizard.spells.levelGroup", {
+                level: t(levelKey),
+                n: fmt.num(spells.length),
+              })}
+              accent="violet"
+            >
               <div className="grid gap-2 sm:grid-cols-2">
                 {spells.map((spell) => (
                   <Toggle
                     key={spell.id}
                     checked={doc.spellcasting.known.includes(spell.id)}
                     onChange={() => toggleKnown(spell.id)}
-                    label={`${spell.name} — ${spell.castingTime}, ${ftText(spell.range)}`}
+                    label={t("wizard.spells.spellOption", {
+                      name: spell.name,
+                      time: spell.castingTime,
+                      range: fmt.distanceText(spell.range),
+                    })}
                   />
                 ))}
               </div>

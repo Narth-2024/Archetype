@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, EB_Garamond } from "next/font/google";
+import { getI18n } from "@/lib/i18n/server";
+import { I18nProvider } from "@/lib/i18n/client";
+import { HTML_LANG } from "@/lib/i18n/locales";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,16 +15,27 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Archetype",
-  description: "Sistema de fichas de personagens de RPG de mesa",
-};
+const titleFont = EB_Garamond({
+  variable: "--font-title",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  style: ["normal", "italic"],
+});
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return {
+    title: "Archetype",
+    description: t("app.desc"),
+  };
+}
+
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const { locale, units } = await getI18n();
   return (
     <html
-      lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      lang={HTML_LANG[locale]}
+      className={`${geistSans.variable} ${geistMono.variable} ${titleFont.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
@@ -32,7 +46,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <I18nProvider locale={locale} units={units}>
+          {children}
+        </I18nProvider>
+      </body>
     </html>
   );
 }

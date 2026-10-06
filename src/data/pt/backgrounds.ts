@@ -1,4 +1,4 @@
-import type { SkillId } from "../domain/types";
+import type { SkillId } from "../../domain/types";
 import type { TraitDef } from "./races";
 
 export type BackgroundDef = {

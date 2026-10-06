@@ -2,10 +2,9 @@
 
 import { useWizard } from "../context";
 import { Badge, Card, Field, NumberInput, Select, TextArea, TextInput, Toggle } from "@/components/ui";
-import { getWeapon, WEAPONS } from "@/data";
-import { ABILITY_KEYS, ABILITY_NAMES, type Attack, type AbilityKey } from "@/domain/types";
+import { useT, useData, useFormat } from "@/lib/i18n/client";
+import { ABILITY_KEYS, type Attack, type AbilityKey } from "@/domain/types";
 import { attackBonus, attackDamage, resolveAttackAbility } from "@/domain/calc";
-import { ftRange } from "@/domain/units";
 
 function newAttack(): Attack {
   return {
@@ -26,18 +25,21 @@ function newAttack(): Attack {
 
 export function StepAttacks() {
   const { doc, update } = useWizard();
+  const t = useT();
+  const d = useData();
+  const fmt = useFormat();
 
   function addAttack(kind: Attack["kind"]) {
     const atk = newAttack();
     atk.kind = kind;
-    update((d) => {
-      d.attacks.push(atk);
+    update((doc) => {
+      doc.attacks.push(atk);
     });
   }
 
   function patchAttack(id: string, patch: Partial<Attack>) {
-    update((d) => {
-      const found = d.attacks.find((a) => a.id === id);
+    update((doc) => {
+      const found = doc.attacks.find((a) => a.id === id);
       if (found) Object.assign(found, patch);
     });
   }
@@ -45,111 +47,126 @@ export function StepAttacks() {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-zinc-400">
-          Bônus de ataque e dano são calculados a partir de atributo,
-          proficiência e arma. Você só escolhe o que usar.
-        </p>
+        <p className="text-sm text-zinc-400">{t("wizard.attacks.intro")}</p>
         <div className="flex gap-2">
           <button
             type="button"
             onClick={() => addAttack("arma")}
             className="rounded-md border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 transition hover:border-amber-600 hover:text-amber-400"
           >
-            + Ataque com arma
+            + {t("wizard.attacks.addWeapon")}
           </button>
           <button
             type="button"
             onClick={() => addAttack("magico")}
             className="rounded-md border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 transition hover:border-amber-600 hover:text-amber-400"
           >
-            + Ataque mágico
+            + {t("wizard.attacks.addSpell")}
           </button>
         </div>
       </div>
 
       {doc.attacks.length === 0 && (
         <Card>
-          <p className="text-sm text-zinc-500">
-            Nenhum ataque cadastrado ainda.
-          </p>
+          <p className="text-sm text-zinc-500">{t("wizard.attacks.empty")}</p>
         </Card>
       )}
 
       {doc.attacks.map((atk) => {
-        const bonus = attackBonus(doc, atk);
-        const damage = attackDamage(doc, atk);
-        const ability = resolveAttackAbility(doc, atk);
-        const weapon = atk.weaponId ? getWeapon(atk.weaponId) : undefined;
+        const bonus = attackBonus(doc, atk, d);
+        const damage = attackDamage(doc, atk, d);
+        const ability = resolveAttackAbility(doc, atk, d);
+        const weapon = atk.weaponId ? d.getWeapon(atk.weaponId) : undefined;
         return (
           <Card key={atk.id}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
                   <h4 className="text-base font-semibold text-zinc-100">
-                    {atk.name || (weapon?.name ?? "Ataque sem nome")}
+                    {atk.name ||
+                      weapon?.name ||
+                      t("wizard.attacks.unnamed")}
                   </h4>
                   <Badge color={atk.kind === "magico" ? "blue" : "amber"}>
-                    {atk.kind === "magico" ? "Mágico" : "Arma"}
+                    {atk.kind === "magico"
+                      ? t("wizard.badge.spell")
+                      : t("wizard.badge.weapon")}
                   </Badge>
                   {atk.magicBonus > 0 && (
-                    <Badge color="green">+{atk.magicBonus} mágico</Badge>
+                    <Badge color="green">
+                      {t("wizard.attacks.magicBadge", { n: atk.magicBonus })}
+                    </Badge>
                   )}
                 </div>
                 <p className="mt-1 text-sm text-zinc-400">
-                  Ataque{" "}
+                  {t("wizard.attacks.attack")}{" "}
                   <strong className="text-amber-400">
                     {bonus.value >= 0 ? `+${bonus.value}` : bonus.value}
                   </strong>{" "}
-                  · Dano <strong className="text-zinc-200">{damage}</strong>
-                  {atk.range && ` · alcance ${ftRange(atk.range)}`}
+                  · {t("wizard.attacks.damage")}{" "}
+                  <strong className="text-zinc-200">{damage}</strong>
+                  {atk.range &&
+                    ` · ${t("wizard.attacks.range", {
+                      value: fmt.distanceRange(atk.range),
+                    })}`}
                   {weapon && ` · ${weapon.properties.join(", ")}`}
                 </p>
                 <p className="mt-1 text-xs text-zinc-600">
                   {bonus.parts
-                    .map((p) => `${p.value >= 0 ? "+" : "−"}${Math.abs(p.value)} ${p.label}`)
+                    .map(
+                      (p) =>
+                        `${p.value >= 0 ? "+" : "−"}${Math.abs(p.value)} ${p.label}`,
+                    )
                     .join(" ")}{" "}
-                  · habilidade: {ABILITY_NAMES[ability]}
+                  ·{" "}
+                  {t("wizard.attacks.ability", {
+                    name: d.ABILITY_NAMES[ability] ?? ability,
+                  })}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() =>
-                  update((d) => {
-                    d.attacks = d.attacks.filter((a) => a.id !== atk.id);
+                  update((doc) => {
+                    doc.attacks = doc.attacks.filter((a) => a.id !== atk.id);
                   })
                 }
                 className="text-xs text-zinc-600 transition hover:text-red-400"
               >
-                remover
+                {t("wizard.attacks.remove")}
               </button>
             </div>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <Field label="Nome">
+              <Field label={t("wizard.name")}>
                 <TextInput
                   value={atk.name}
                   onChange={(e) => patchAttack(atk.id, { name: e.target.value })}
-                  placeholder={weapon?.name ?? "Nome do ataque"}
+                  placeholder={weapon?.name ?? t("wizard.attacks.namePlaceholder")}
                 />
               </Field>
 
               {atk.kind === "arma" && (
-                <Field label="Arma">
+                <Field label={t("wizard.attacks.weapon")}>
                   <Select
                     value={atk.weaponId ?? ""}
                     onChange={(e) => {
-                      const w = e.target.value ? getWeapon(e.target.value) : null;
+                      const w = e.target.value
+                        ? d.getWeapon(e.target.value)
+                        : null;
                       patchAttack(atk.id, {
                         weaponId: e.target.value || null,
                         name: w?.name ?? atk.name,
                         damageType: w?.damageType ?? atk.damageType,
                         range: w?.range ?? atk.range,
-                        properties: w ? w.properties.join(", ") : atk.properties,
+                        properties: w
+                          ? w.properties.join(", ")
+                          : atk.properties,
                       });
                     }}
                   >
-                    <option value="">Arma personalizada</option>
-                    {WEAPONS.map((w) => (
+                    <option value="">{t("wizard.attacks.customWeapon")}</option>
+                    {d.WEAPONS.map((w) => (
                       <option key={w.id} value={w.id}>
                         {w.name}
                       </option>
@@ -158,7 +175,7 @@ export function StepAttacks() {
                 </Field>
               )}
 
-              <Field label="Habilidade usada">
+              <Field label={t("wizard.attacks.abilityField")}>
                 <Select
                   value={atk.ability}
                   onChange={(e) =>
@@ -168,17 +185,19 @@ export function StepAttacks() {
                   }
                 >
                   <option value="auto">
-                    Automática ({ABILITY_NAMES[ability]})
+                    {t("wizard.attacks.autoAbility", {
+                      name: d.ABILITY_NAMES[ability] ?? ability,
+                    })}
                   </option>
                   {ABILITY_KEYS.map((k) => (
                     <option key={k} value={k}>
-                      {ABILITY_NAMES[k]}
+                      {d.ABILITY_NAMES[k] ?? k}
                     </option>
                   ))}
                 </Select>
               </Field>
 
-              <Field label="Bônus mágico">
+              <Field label={t("wizard.attacks.magicBonus")}>
                 <NumberInput
                   value={atk.magicBonus}
                   onChange={(n) => patchAttack(atk.id, { magicBonus: n })}
@@ -187,40 +206,55 @@ export function StepAttacks() {
                 />
               </Field>
 
-              <Field label="Dano (ex: 1d8)">
+              <Field label={t("wizard.attacks.damageField")}>
                 <TextInput
                   value={atk.damageDice ?? weapon?.damage ?? ""}
                   onChange={(e) =>
                     patchAttack(atk.id, { damageDice: e.target.value || null })
                   }
-                  placeholder={weapon?.damage ?? "1d6"}
+                  placeholder={weapon?.damage ?? t("wizard.attacks.damagePlaceholder")}
                 />
               </Field>
 
-              <Field label="Tipo de dano">
+              <Field label={t("wizard.attacks.damageType")}>
                 <TextInput
                   value={atk.damageType}
-                  onChange={(e) => patchAttack(atk.id, { damageType: e.target.value })}
-                  placeholder={weapon?.damageType ?? "cortante"}
+                  onChange={(e) =>
+                    patchAttack(atk.id, { damageType: e.target.value })
+                  }
+                  placeholder={
+                    weapon?.damageType ?? t("wizard.attacks.damageTypePlaceholder")
+                  }
                 />
               </Field>
 
               <Field
-                label="Alcance"
-                hint={atk.range ? `exibido como ${ftRange(atk.range)}` : "em pés (exibição em metros)"}
+                label={t("wizard.attacks.rangeField")}
+                hint={
+                  atk.range
+                    ? t("wizard.attacks.rangeShown", {
+                        value: fmt.distanceRange(atk.range),
+                      })
+                    : t("wizard.attacks.rangeHint")
+                }
               >
                 <TextInput
                   value={atk.range}
                   onChange={(e) => patchAttack(atk.id, { range: e.target.value })}
-                  placeholder={weapon?.range ?? "ex: 30/120"}
+                  placeholder={weapon?.range ?? t("wizard.attacks.rangePlaceholder")}
                 />
               </Field>
 
-              <Field label="Propriedades">
+              <Field label={t("wizard.attacks.properties")}>
                 <TextInput
                   value={atk.properties}
-                  onChange={(e) => patchAttack(atk.id, { properties: e.target.value })}
-                  placeholder={weapon?.properties.join(", ") ?? "Finesse, Leve"}
+                  onChange={(e) =>
+                    patchAttack(atk.id, { properties: e.target.value })
+                  }
+                  placeholder={
+                    weapon?.properties.join(", ") ??
+                    t("wizard.attacks.propertiesPlaceholder")
+                  }
                 />
               </Field>
 
@@ -228,17 +262,19 @@ export function StepAttacks() {
                 <Toggle
                   checked={atk.proficient}
                   onChange={(v) => patchAttack(atk.id, { proficient: v })}
-                  label="Proficiente"
+                  label={t("wizard.attacks.proficient")}
                 />
               </div>
             </div>
 
             <div className="mt-3">
-              <Field label="Descrição">
+              <Field label={t("wizard.attacks.description")}>
                 <TextArea
                   value={atk.description}
-                  onChange={(e) => patchAttack(atk.id, { description: e.target.value })}
-                  placeholder="Efeitos especiais, notas..."
+                  onChange={(e) =>
+                    patchAttack(atk.id, { description: e.target.value })
+                  }
+                  placeholder={t("wizard.attacks.descriptionPlaceholder")}
                 />
               </Field>
             </div>

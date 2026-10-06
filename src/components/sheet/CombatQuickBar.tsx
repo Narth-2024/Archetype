@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ft } from "@/domain/units";
+import { useFormat, useT } from "@/lib/i18n/client";
 
 export function CombatQuickBar({
   characterId,
@@ -23,6 +23,8 @@ export function CombatQuickBar({
   speed: number;
 }) {
   const router = useRouter();
+  const t = useT();
+  const fmt = useFormat();
   const [busy, setBusy] = useState(false);
 
   async function adjust(delta: number) {
@@ -80,37 +82,49 @@ export function CombatQuickBar({
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <div className="flex items-center gap-3 rounded-md border border-zinc-800 px-3 py-1.5">
           <div className="text-center">
-            <p className="text-[10px] uppercase text-zinc-500">CA</p>
-            <p className="text-xl font-bold text-zinc-100">{ac}</p>
+            <p className="text-[10px] uppercase text-zinc-500">
+              {t("sheet.acAbbr")}
+            </p>
+            <p className="text-xl font-bold text-zinc-100">{fmt.num(ac)}</p>
           </div>
           <div className="h-8 w-px bg-zinc-800" />
           <div className="text-center">
-            <p className="text-[10px] uppercase text-zinc-500">Iniciativa</p>
+            <p className="text-[10px] uppercase text-zinc-500">
+              {t("sheet.initiative")}
+            </p>
             <p className="text-xl font-bold text-zinc-100">
-              {initiative >= 0 ? `+${initiative}` : initiative}
+              {initiative >= 0 ? `+${fmt.num(initiative)}` : fmt.num(initiative)}
             </p>
           </div>
           <div className="h-8 w-px bg-zinc-800" />
           <div className="text-center">
-            <p className="text-[10px] uppercase text-zinc-500">Desloc.</p>
-            <p className="text-xl font-bold text-zinc-100">{ft(speed)}</p>
+            <p className="text-[10px] uppercase text-zinc-500">
+              {t("sheet.speedAbbr")}
+            </p>
+            <p className="text-xl font-bold text-zinc-100">
+              {fmt.distance(speed)}
+            </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3 rounded-md border border-zinc-800 px-3 py-1.5">
           <div className="text-center">
-            <p className="text-[10px] uppercase text-zinc-500">PV</p>
+            <p className="text-[10px] uppercase text-zinc-500">
+              {t("sheet.hpAbbr")}
+            </p>
             <p className={`text-xl font-bold ${hpColor}`}>
-              {hpCurrent}
-              <span className="text-sm text-zinc-500">/{hpMax}</span>
+              {fmt.num(hpCurrent)}
+              <span className="text-sm text-zinc-500">/{fmt.num(hpMax)}</span>
             </p>
           </div>
           {hpTemp > 0 && (
             <>
               <div className="h-8 w-px bg-zinc-800" />
               <div className="text-center">
-                <p className="text-[10px] uppercase text-zinc-500">Temp</p>
-                <p className="text-xl font-bold text-sky-400">{hpTemp}</p>
+                <p className="text-[10px] uppercase text-zinc-500">
+                  {t("sheet.tempAbbr")}
+                </p>
+                <p className="text-xl font-bold text-sky-400">{fmt.num(hpTemp)}</p>
               </div>
             </>
           )}
@@ -126,7 +140,7 @@ export function CombatQuickBar({
                     : "border-emerald-800 text-emerald-400 hover:bg-emerald-950/60"
                 }`}
               >
-                {delta > 0 ? `+${delta}` : delta}
+                {delta > 0 ? `+${fmt.num(delta)}` : fmt.num(delta)}
               </button>
             ))}
           </div>
@@ -137,7 +151,7 @@ export function CombatQuickBar({
           disabled={busy}
           className="rounded-md border border-amber-800 px-3 py-2 text-xs text-amber-400 transition hover:bg-amber-950/60 disabled:opacity-50"
         >
-          ☾ Descanso longo
+          {t("sheet.longRest")}
         </button>
 
         <div className="ml-auto flex gap-2">
@@ -145,7 +159,7 @@ export function CombatQuickBar({
             href={`/character/${characterId}/edit`}
             className="btn-primary rounded-md px-4 py-2 text-sm font-medium text-white"
           >
-            Editar ficha
+            {t("sheet.editSheet")}
           </Link>
         </div>
       </div>

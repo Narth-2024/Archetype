@@ -8,8 +8,10 @@ import {
   SESSION_COOKIE,
 } from "@/lib/auth";
 import { adoptOrphanCharacters } from "@/lib/characters";
+import { getI18n } from "@/lib/i18n/server";
 
 export async function POST(request: Request) {
+  const { t } = await getI18n();
   const body = (await request.json().catch(() => null)) as {
     username?: string;
     password?: string;
@@ -18,13 +20,13 @@ export async function POST(request: Request) {
   const password = body?.password ?? "";
   if (!/^[a-z0-9_]{3,32}$/.test(username)) {
     return NextResponse.json(
-      { error: "Usuário: 3 a 32 caracteres (letras, números ou _)." },
+      { error: t("api.badUsername") },
       { status: 400 },
     );
   }
   if (password.length < 6) {
     return NextResponse.json(
-      { error: "A senha precisa de pelo menos 6 caracteres." },
+      { error: t("api.badPassword") },
       { status: 400 },
     );
   }
@@ -38,7 +40,7 @@ export async function POST(request: Request) {
     ]);
   } catch {
     return NextResponse.json(
-      { error: "Esse nome de usuário já existe." },
+      { error: t("api.userExists") },
       { status: 409 },
     );
   }

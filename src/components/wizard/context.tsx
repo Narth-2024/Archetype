@@ -10,6 +10,7 @@ import {
   useRef,
 } from "react";
 import type { CharacterDoc } from "@/domain/types";
+import { useT } from "@/lib/i18n/client";
 
 type State = {
   doc: CharacterDoc;
@@ -66,6 +67,8 @@ export function WizardProvider({
     error: null,
   });
 
+  const t = useT();
+
   const stateRef = useRef(state);
 
   useEffect(() => {
@@ -85,9 +88,9 @@ export function WizardProvider({
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       dispatch({ type: "saved" });
     } catch (e) {
-      dispatch({ type: "error", message: `Falha ao salvar: ${String(e)}` });
+      dispatch({ type: "error", message: t("wizard.saveFailed", { error: String(e) }) });
     }
-  }, [characterId]);
+  }, [characterId, t]);
 
   useEffect(() => {
     if (!state.dirty) return;

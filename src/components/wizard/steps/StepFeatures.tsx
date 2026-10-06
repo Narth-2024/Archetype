@@ -2,29 +2,14 @@
 
 import { useWizard } from "../context";
 import { Badge, Card, Select } from "@/components/ui";
-import {
-  ABILITY_PT,
-  FEATS,
-  buildFeatRef,
-  featUnmetRequirements,
-  getBackground,
-  getClass,
-  getRace,
-  getSubclass,
-  getSubrace,
-  parseFeatRef,
-} from "@/data";
-import {
-  ABILITY_NAMES,
-  type AbilityKey,
-} from "@/domain/types";
+import { useT, useData, useFormat } from "@/lib/i18n/client";
+import type { AbilityKey } from "@/domain/types";
 import {
   abilityScore,
   classEntries,
   hasSpellcasting,
   resolveProficiencies,
 } from "@/domain/calc";
-import { ft } from "@/domain/units";
 
 function TraitList({
   title,
@@ -55,46 +40,65 @@ function TraitList({
 
 export function StepFeatures() {
   const { doc, update } = useWizard();
-  const race = getRace(doc.identity.raceId);
-  const subrace = getSubrace(doc.identity.subraceId);
-  const classes: { cls: NonNullable<ReturnType<typeof getClass>>; level: number }[] = [];
+  const t = useT();
+  const d = useData();
+  const fmt = useFormat();
+  const race = d.getRace(doc.identity.raceId);
+  const subrace = d.getSubrace(doc.identity.subraceId);
+  const classes: { cls: NonNullable<ReturnType<typeof d.getClass>>; level: number }[] = [];
   for (const e of classEntries(doc)) {
-    const cls = getClass(e.classId);
+    const cls = d.getClass(e.classId);
     if (cls) classes.push({ cls, level: e.level });
   }
-  const bg = getBackground(doc.identity.backgroundId);
-  const profs = resolveProficiencies(doc);
+  const bg = d.getBackground(doc.identity.backgroundId);
+  const profs = resolveProficiencies(doc, d);
 
   const featCtx = {
     abilities: {
-      str: abilityScore(doc, "str"),
-      dex: abilityScore(doc, "dex"),
-      con: abilityScore(doc, "con"),
-      int: abilityScore(doc, "int"),
-      wis: abilityScore(doc, "wis"),
-      cha: abilityScore(doc, "cha"),
+      str: abilityScore(doc, "str", d),
+      dex: abilityScore(doc, "dex", d),
+      con: abilityScore(doc, "con", d),
+      int: abilityScore(doc, "int", d),
+      wis: abilityScore(doc, "wis", d),
+      cha: abilityScore(doc, "cha", d),
     },
     armorProficiencies: profs.armors,
-    canCastSpells: hasSpellcasting(doc),
+    canCastSpells: hasSpellcasting(doc, d),
   };
 
   function toggleFeat(featId: string) {
-    update((d) => {
-      const idx = d.feats.findIndex((ref) => parseFeatRef(ref).featId === featId);
+    update((doc) => {
+      const idx = doc.feats.findIndex(
+        (ref) => d.parseFeatRef(ref).featId === featId,
+      );
       if (idx >= 0) {
-        d.feats.splice(idx, 1);
+        doc.feats.splice(idx, 1);
       } else {
-        const feat = FEATS.find((f) => f.id === featId);
-        d.feats.push(feat?.abilityChoice ? buildFeatRef(featId, feat.abilityChoice.options[0]) : featId);
+        const feat = d.FEATS.find((f) => f.id === featId);
+        doc.feats.push(
+          feat?.abilityChoice
+            ? d.buildFeatRef(featId, feat.abilityChoice.options[0])
+            : featId,
+        );
       }
     });
   }
 
   function setFeatAbility(featId: string, ability: string) {
-    update((d) => {
-      const idx = d.feats.findIndex((ref) => parseFeatRef(ref).featId === featId);
-      if (idx >= 0) d.feats[idx] = buildFeatRef(featId, ability as AbilityKey);
+    update((doc) => {
+      const idx = doc.feats.findIndex(
+        (ref) => d.parseFeatRef(ref).featId === featId,
+      );
+      if (idx >= 0) doc.feats[idx] = d.buildFeatRef(featId, ability as AbilityKey);
     });
+  }
+
+  function speedDetail(speed: number, darkvision?: number | null) {
+    const base = t("wizard.identity.speed", { value: fmt.distance(speed) });
+    if (!darkvision) return base;
+    return `${base} · ${t("wizard.identity.darkvision", {
+      value: fmt.distance(darkvision),
+    })}`;
   }
 
   const bonusLines: { label: string; detail: string }[] = [];
@@ -102,37 +106,37 @@ export function StepFeatures() {
     const fixed = Object.entries(race.abilityBonus.fixed);
     if (fixed.length > 0) {
       bonusLines.push({
-        label: `${race.name} → atributos`,
+        label: t("wizard.features.raceAbilities", { name: race.name }),
         detail: fixed
-          .map(([k, v]) => `+${v} ${k.toUpperCase()}`)
+          .map(([k, v]) => `+${v} ${d.ABILITY_ABBR[k] ?? k.toUpperCase()}`)
           .join(", "),
       });
     }
     if (race.abilityBonus.flexible) {
       bonusLines.push({
-        label: `${race.name} → bônus flexível`,
+        label: t("wizard.features.raceFlexible", { name: race.name }),
         detail:
           doc.identity.raceBonusChoices.length > 0
-            ? `+${race.abilityBonus.flexible.amount} em ${doc.identity.raceBonusChoices
-                .map((k: AbilityKey) => ABILITY_NAMES[k])
-                .join(", ")}`
-            : "ainda não escolhido (etapa de atributos)",
+            ? t("wizard.features.flexibleDetail", {
+                amount: race.abilityBonus.flexible.amount,
+                names: doc.identity.raceBonusChoices
+                  .map((k: AbilityKey) => d.ABILITY_NAMES[k] ?? k)
+                  .join(", "),
+              })
+            : t("wizard.features.notChosen"),
       });
     }
     bonusLines.push({
-      label: `${race.name} → deslocamento`,
-      detail: `${ft(race.speed)}${race.darkvision ? ` · visão no escuro ${ft(race.darkvision)}` : ""}`,
+      label: t("wizard.features.raceSpeed", { name: race.name }),
+      detail: speedDetail(race.speed, race.darkvision),
     });
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <Card title="Como as escolhas estão sendo aplicadas">
+      <Card title={t("wizard.features.howApplied")}>
         {bonusLines.length === 0 ? (
-          <p className="text-sm text-zinc-500">
-            Escolha raça, classe e antecedente na etapa 1 para ver as
-            características aqui.
-          </p>
+          <p className="text-sm text-zinc-500">{t("wizard.features.chooseFirst")}</p>
         ) : (
           <ul className="flex flex-col gap-2 text-sm">
             {bonusLines.map((line) => (
@@ -143,9 +147,12 @@ export function StepFeatures() {
             ))}
             {classes.length > 0 && (
               <li className="flex flex-wrap gap-2">
-                <span className="text-zinc-300">Classes → proficiências:</span>
+                <span className="text-zinc-300">
+                  {t("wizard.features.classProficiencies")}
+                </span>
                 <span className="text-emerald-400">
-                  {[...profs.armors, ...profs.weapons].join(", ") || "nenhuma"}
+                  {[...profs.armors, ...profs.weapons].join(", ") ||
+                    t("wizard.features.none")}
                 </span>
               </li>
             )}
@@ -154,61 +161,70 @@ export function StepFeatures() {
       </Card>
 
       <TraitList
-        title={`Características de ${race?.name ?? "raça"}`}
+        title={t("wizard.features.raceTraits", {
+          name: race?.name ?? t("wizard.features.raceFallback"),
+        })}
         traits={race?.traits ?? []}
-        badge="Raça"
+        badge={t("wizard.badge.race")}
       />
       {subrace && (
         <TraitList
-          title={`Características de ${subrace.name}`}
+          title={t("wizard.features.subraceTraits", { name: subrace.name })}
           traits={subrace.traits}
-          badge="Sub-raça"
+          badge={t("wizard.badge.subrace")}
         />
       )}
       {classes.map(({ cls, level }) => (
         <TraitList
           key={cls.id}
-          title={`Recursos de ${cls.name} (nível ${level})`}
+          title={t("wizard.features.classResources", { name: cls.name, level })}
           traits={cls.features}
-          badge="Classe"
+          badge={t("wizard.badge.class")}
         />
       ))}
       {classEntries(doc)
         .filter((e) => e.subclassId)
         .map((e) => {
-          const subclass = getSubclass(e.subclassId);
+          const subclass = d.getSubclass(e.subclassId);
           if (!subclass) return null;
           const features = subclass.features.filter((f) => f.level <= e.level);
           return (
             <TraitList
               key={`${e.classId}-subclass`}
-              title={`${subclass.name} (nível ${e.level} de ${getClass(e.classId)?.name ?? e.classId})`}
+              title={t("wizard.features.subclassResources", {
+                name: subclass.name,
+                level: e.level,
+                cls: d.getClass(e.classId)?.name ?? e.classId,
+              })}
               traits={
                 features.length > 0
                   ? features
                   : [
                       {
-                        name: `Disponível no nível ${subclass.level}`,
-                        description: `Os recursos de ${subclass.name} começam no nível ${subclass.level} da classe.`,
+                        name: t("wizard.features.availableAtLevel", {
+                          level: subclass.level,
+                        }),
+                        description: t("wizard.features.subclassStartsAt", {
+                          name: subclass.name,
+                          level: subclass.level,
+                        }),
                       },
                     ]
               }
-              badge="Subclasse"
+              badge={t("wizard.badge.subclass")}
             />
           );
         })}
-      <Card title="Talentos (feats)" accent="amber">
-        <p className="mb-3 text-xs text-zinc-500">
-          Marque livremente. Avisos em vermelho indicam pré-requisito não
-          cumprido — o talento pode ser mantido, mas não terá efeito até a mesa
-          permitir.
-        </p>
+      <Card title={t("wizard.features.featsTitle")} accent="amber">
+        <p className="mb-3 text-xs text-zinc-500">{t("wizard.features.featsHint")}</p>
         <ul className="flex flex-col gap-3">
-          {FEATS.map((feat) => {
-            const ref = doc.feats.find((r) => parseFeatRef(r).featId === feat.id);
+          {d.FEATS.map((feat) => {
+            const ref = doc.feats.find((r) => d.parseFeatRef(r).featId === feat.id);
             const selected = Boolean(ref);
-            const missing = selected ? featUnmetRequirements(feat, featCtx) : [];
-            const parsed = ref ? parseFeatRef(ref) : null;
+            const missing = selected
+              ? d.featUnmetRequirements(feat, featCtx)
+              : [];
+            const parsed = ref ? d.parseFeatRef(ref) : null;
             return (
               <li key={feat.id} className="rounded-md border border-zinc-800 p-3">
                 <label className="flex cursor-pointer items-start gap-2">
@@ -230,10 +246,12 @@ export function StepFeatures() {
                       onChange={(e) => setFeatAbility(feat.id, e.target.value)}
                       className="max-w-56"
                     >
-                      <option value="">Escolha o atributo...</option>
+                      <option value="">{t("wizard.features.chooseAbility")}</option>
                       {feat.abilityChoice.options.map((opt) => (
                         <option key={opt} value={opt}>
-                          +1 {ABILITY_PT[opt]}
+                          {t("wizard.features.abilityPlusOne", {
+                            name: d.ABILITY_ABBR[opt] ?? opt.toUpperCase(),
+                          })}
                         </option>
                       ))}
                     </Select>
@@ -241,7 +259,8 @@ export function StepFeatures() {
                 )}
                 {missing.length > 0 && (
                   <p className="mt-2 pl-6 text-xs text-red-400">
-                    ⚠ Pré-requisito não cumprido: {missing.join("; ")}.
+                    ⚠{" "}
+                    {t("wizard.features.reqNotMet", { list: missing.join("; ") })}
                   </p>
                 )}
               </li>
@@ -251,10 +270,13 @@ export function StepFeatures() {
       </Card>
 
       {bg && (
-        <Card title={`Traço de ${bg.name}`} accent="emerald">
+        <Card
+          title={t("wizard.features.backgroundFeature", { name: bg.name })}
+          accent="emerald"
+        >
           <div className="flex items-center gap-2">
             <span className="font-medium text-zinc-200">{bg.feature.name}</span>
-            <Badge color="amber">Antecedente</Badge>
+            <Badge color="amber">{t("wizard.badge.background")}</Badge>
           </div>
           <p className="mt-0.5 text-sm text-zinc-400">{bg.feature.description}</p>
         </Card>

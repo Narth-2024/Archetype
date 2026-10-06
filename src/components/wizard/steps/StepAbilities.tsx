@@ -3,11 +3,8 @@
 import { useState } from "react";
 import { useWizard } from "../context";
 import { Card, NumberInput, Toggle } from "@/components/ui";
-import {
-  ABILITY_KEYS,
-  ABILITY_NAMES,
-  type AbilityKey,
-} from "@/domain/types";
+import { useT, useData, useFormat } from "@/lib/i18n/client";
+import { ABILITY_KEYS, type AbilityKey } from "@/domain/types";
 import { abilityMod, abilityScore, racialBonus } from "@/domain/calc";
 import {
   POINT_BUY_TOTAL,
@@ -16,19 +13,27 @@ import {
   pointBuySpent,
   suggestAbilities,
 } from "@/domain/optimize";
-import { getRace } from "@/data";
 import type { AbilityMode } from "@/domain/types";
 
-const MODES: { id: AbilityMode; label: string }[] = [
-  { id: "pontos", label: "Pontos (27)" },
-  { id: "array", label: "Array padrão" },
-  { id: "livre", label: "Livre" },
+const MODES: { id: AbilityMode; key: string }[] = [
+  { id: "pontos", key: "wizard.abilities.modePoints" },
+  { id: "array", key: "wizard.abilities.modeArray" },
+  { id: "livre", key: "wizard.abilities.modeFree" },
 ];
+
+const HINTS: Record<AbilityMode, string> = {
+  pontos: "wizard.abilities.hintPoints",
+  array: "wizard.abilities.hintArray",
+  livre: "wizard.abilities.hintFree",
+};
 
 export function StepAbilities() {
   const { doc, update } = useWizard();
+  const t = useT();
+  const d = useData();
+  const fmt = useFormat();
   const [note, setNote] = useState<string | null>(null);
-  const race = getRace(doc.identity.raceId);
+  const race = d.getRace(doc.identity.raceId);
   const flexible = race?.abilityBonus.flexible;
   const choices = doc.identity.raceBonusChoices;
   const mode = doc.identity.abilityMode;
@@ -37,53 +42,53 @@ export function StepAbilities() {
   const budgetValid = Number.isFinite(spent);
 
   function setMode(next: AbilityMode) {
-    update((d) => {
-      d.identity.abilityMode = next;
+    update((doc) => {
+      doc.identity.abilityMode = next;
     });
     setNote(null);
   }
 
   function setBase(key: AbilityKey, n: number) {
-    update((d) => {
-      if (d.identity.abilityMode === "pontos") {
+    update((doc) => {
+      if (doc.identity.abilityMode === "pontos") {
         const others = ABILITY_KEYS.reduce(
-          (sum, k) => (k === key ? sum : sum + pointBuyCost(d.abilities[k])),
+          (sum, k) => (k === key ? sum : sum + pointBuyCost(doc.abilities[k])),
           0,
         );
         if (others + pointBuyCost(n) > POINT_BUY_TOTAL) return;
       }
-      d.abilities[key] = n;
+      doc.abilities[key] = n;
     });
   }
 
   function applyArray() {
-    update((d) => {
+    update((doc) => {
       ABILITY_KEYS.forEach((k, i) => {
-        d.abilities[k] = STANDARD_ARRAY[i];
+        doc.abilities[k] = STANDARD_ARRAY[i];
       });
     });
     setNote(null);
   }
 
   function runSuggestion() {
-    const suggestion = suggestAbilities(doc);
-    update((d) => {
+    const suggestion = suggestAbilities(doc, d);
+    update((doc) => {
       ABILITY_KEYS.forEach((k) => {
-        d.abilities[k] = suggestion.abilities[k];
+        doc.abilities[k] = suggestion.abilities[k];
       });
-      d.identity.raceBonusChoices = suggestion.raceChoices;
+      doc.identity.raceBonusChoices = suggestion.raceChoices;
     });
     setNote(suggestion.note);
   }
 
   function toggleChoice(key: AbilityKey) {
-    update((d) => {
+    update((doc) => {
       if (!flexible) return;
-      const current = d.identity.raceBonusChoices;
+      const current = doc.identity.raceBonusChoices;
       if (current.includes(key)) {
-        d.identity.raceBonusChoices = current.filter((k) => k !== key);
+        doc.identity.raceBonusChoices = current.filter((k) => k !== key);
       } else if (current.length < flexible.count) {
-        d.identity.raceBonusChoices = [...current, key];
+        doc.identity.raceBonusChoices = [...current, key];
       }
     });
   }
@@ -95,7 +100,9 @@ export function StepAbilities() {
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-zinc-400">Distribuição:</span>
+          <span className="text-sm text-zinc-400">
+            {t("wizard.abilities.distribution")}
+          </span>
           {MODES.map((m) => (
             <button
               key={m.id}
@@ -107,7 +114,7 @@ export function StepAbilities() {
                   : "border-zinc-700 text-zinc-400 hover:border-zinc-500"
               }`}
             >
-              {m.label}
+              {t(m.key)}
             </button>
           ))}
           {mode === "pontos" && (
@@ -122,7 +129,9 @@ export function StepAbilities() {
                       : "border-amber-700 text-amber-400"
               }`}
             >
-              Restantes: {budgetValid ? remaining : "—"}
+              {t("wizard.abilities.remaining", {
+                n: budgetValid ? fmt.num(remaining) : "—",
+              })}
             </span>
           )}
         </div>
@@ -132,7 +141,7 @@ export function StepAbilities() {
             onClick={runSuggestion}
             className="rounded-md border border-sky-700 px-3 py-1.5 text-xs text-sky-400 transition hover:bg-sky-950/50"
           >
-            ✨ Sugerir distribuição
+            ✨ {t("wizard.abilities.suggest")}
           </button>
           {mode !== "livre" && (
             <button
@@ -140,19 +149,13 @@ export function StepAbilities() {
               onClick={applyArray}
               className="rounded-md border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-amber-600 hover:text-amber-400"
             >
-              Aplicar array (15/14/13/12/10/8)
+              {t("wizard.abilities.applyArray")}
             </button>
           )}
         </div>
       </div>
 
-      <p className="text-sm text-zinc-400">
-        {mode === "pontos" &&
-          "Gaste 27 pontos: 8–15 por atributo (custos 8=0 … 13=5, 14=7, 15=9). Bônus de raça ficam fora do orçamento."}
-        {mode === "array" &&
-          "Distribua os valores do array padrão (15/14/13/12/10/8) entre os atributos."}
-        {mode === "livre" && "Valores livres de 1 a 20, sem orçamento."}
-      </p>
+      <p className="text-sm text-zinc-400">{t(HINTS[mode])}</p>
 
       {note && (
         <p className="rounded-md border border-sky-800 bg-sky-950/40 px-3 py-2 text-sm text-sky-300">
@@ -162,19 +165,25 @@ export function StepAbilities() {
 
       {!budgetValid && mode === "pontos" && (
         <p className="rounded-md border border-red-800 bg-red-950/40 px-3 py-2 text-sm text-red-300">
-          Há valores fora de 8–15. Corrija-os para voltar ao orçamento de 27
-          pontos.
+          {t("wizard.abilities.budgetInvalid")}
         </p>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {ABILITY_KEYS.map((key) => {
           const base = doc.abilities[key];
-          const raceBonus = racialBonus(doc, key);
-          const total = abilityScore(doc, key);
+          const raceBonus = racialBonus(doc, key, d);
+          const total = abilityScore(doc, key, d);
           const mod = abilityMod(total);
           return (
-            <Card key={key} title={`${ABILITY_NAMES[key]} (${key.toUpperCase()})`} accent="amber">
+            <Card
+              key={key}
+              title={t("wizard.abilities.title", {
+                name: d.ABILITY_NAMES[key] ?? key,
+                abbr: d.ABILITY_ABBR[key] ?? key.toUpperCase(),
+              })}
+              accent="amber"
+            >
               <div className="flex items-center justify-between">
                 <NumberInput
                   value={base}
@@ -186,20 +195,27 @@ export function StepAbilities() {
                   <p className="text-3xl font-bold text-amber-400">
                     {mod >= 0 ? `+${mod}` : mod}
                   </p>
-                  <p className="text-xs text-zinc-500">modificador</p>
+                  <p className="text-xs text-zinc-500">
+                    {t("wizard.abilities.modifier")}
+                  </p>
                 </div>
               </div>
               <p className="mt-3 text-xs text-zinc-500">
-                base {base}
+                {t("wizard.abilities.base", { n: base })}
                 {mode === "pontos" && (
                   <span className="ml-1 text-zinc-600">
-                    · custo {pointBuyCost(base)}
+                    {t("wizard.abilities.cost", { n: pointBuyCost(base) })}
                   </span>
                 )}
                 {raceBonus > 0 && (
-                  <span className="text-emerald-400"> + {raceBonus} raça</span>
+                  <span className="text-emerald-400">
+                    {" "}
+                    {t("wizard.abilities.racial", { n: raceBonus })}
+                  </span>
                 )}
-                <span className="text-zinc-300"> = {total} total</span>
+                <span className="text-zinc-300">
+                  {t("wizard.abilities.total", { n: total })}
+                </span>
               </p>
             </Card>
           );
@@ -208,7 +224,10 @@ export function StepAbilities() {
 
       {flexible && (
         <Card
-          title={`Bônus flexível da raça: escolha ${flexible.count} atributos (+${flexible.amount} em cada)`}
+          title={t("wizard.abilities.flexibleTitle", {
+            count: flexible.count,
+            amount: flexible.amount,
+          })}
           accent="amber"
         >
           <div className="grid gap-2 sm:grid-cols-3">
@@ -217,7 +236,7 @@ export function StepAbilities() {
                 key={key}
                 checked={choices.includes(key)}
                 onChange={() => toggleChoice(key)}
-                label={ABILITY_NAMES[key]}
+                label={d.ABILITY_NAMES[key] ?? key}
                 disabled={
                   !choices.includes(key) && choices.length >= flexible.count
                 }

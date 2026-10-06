@@ -40,5 +40,7 @@ export function newCharacterDoc(): CharacterDoc {
     spellcasting: { known: [], prepared: [], slotsUsed: {} },
     combat: { hpCurrent: 0, hpTemp: 0 },
     notes: "",
+    photo: "",
+    lore: "",
   };
 }

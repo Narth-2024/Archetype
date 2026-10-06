@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useWizard } from "./context";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useT, useFormat } from "@/lib/i18n/client";
 import { StepIdentity } from "./steps/StepIdentity";
 import { StepAbilities } from "./steps/StepAbilities";
 import { StepFeatures } from "./steps/StepFeatures";
@@ -15,19 +16,21 @@ import { StepSpells } from "./steps/StepSpells";
 import { StepReview } from "./steps/StepReview";
 
 const STEPS = [
-  { title: "Identidade", short: "1", component: StepIdentity },
-  { title: "Atributos", short: "2", component: StepAbilities },
-  { title: "Características", short: "3", component: StepFeatures },
-  { title: "Perícias", short: "4", component: StepSkills },
-  { title: "Equipamento", short: "5", component: StepEquipment },
-  { title: "Combate", short: "6", component: StepCombat },
-  { title: "Ataques", short: "7", component: StepAttacks },
-  { title: "Magias", short: "8", component: StepSpells },
-  { title: "Revisão", short: "9", component: StepReview },
+  { key: "wizard.steps.identity", short: "1", component: StepIdentity },
+  { key: "wizard.steps.abilities", short: "2", component: StepAbilities },
+  { key: "wizard.steps.features", short: "3", component: StepFeatures },
+  { key: "wizard.steps.skills", short: "4", component: StepSkills },
+  { key: "wizard.steps.equipment", short: "5", component: StepEquipment },
+  { key: "wizard.steps.combat", short: "6", component: StepCombat },
+  { key: "wizard.steps.attacks", short: "7", component: StepAttacks },
+  { key: "wizard.steps.spells", short: "8", component: StepSpells },
+  { key: "wizard.steps.review", short: "9", component: StepReview },
 ];
 
 export function CharacterWizard() {
   const { doc, update, saving, savedAt, error } = useWizard();
+  const t = useT();
+  const fmt = useFormat();
   const [step, setStep] = useState(Math.min(doc.step, STEPS.length - 1));
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -36,7 +39,7 @@ export function CharacterWizard() {
   function goTo(next: number) {
     if (next < 0 || next >= STEPS.length) return;
     if (step === 0 && next > 0 && !doc.identity.name.trim()) {
-      setValidationError("Informe o nome do personagem para continuar.");
+      setValidationError(t("wizard.nameRequired"));
       return;
     }
     setValidationError(null);
@@ -55,21 +58,23 @@ export function CharacterWizard() {
             href="/"
             className="text-xs text-zinc-500 transition hover:text-amber-400"
           >
-            ← Personagens
+            ← {t("wizard.characters")}
           </Link>
           <h1 className="title-gold text-xl font-bold">
-            {doc.identity.name || "Novo personagem"}
+            {doc.identity.name || t("wizard.newCharacter")}
             {!doc.complete && (
               <span className="ml-2 text-sm font-normal text-zinc-500">
-                (rascunho)
+                ({t("wizard.draft")})
               </span>
             )}
           </h1>
         </div>
         <div className="flex items-center gap-3 text-xs text-zinc-500">
           {error && <span className="text-red-400">{error}</span>}
-          {!error && saving && <span>Salvando...</span>}
-          {!error && !saving && savedAt && <span className="fade-in">✓ Salvo</span>}
+          {!error && saving && <span>{t("wizard.saving")}</span>}
+          {!error && !saving && savedAt && (
+            <span className="fade-in">✓ {t("wizard.saved")}</span>
+          )}
           <ThemeToggle />
         </div>
       </header>
@@ -77,13 +82,13 @@ export function CharacterWizard() {
       <nav className="mb-6 -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         <ol className="flex min-w-max gap-1 rounded-lg border border-zinc-800 bg-zinc-900/50 p-1.5">
           {STEPS.map((s, i) => (
-            <li key={s.title}>
+            <li key={s.key}>
               <button
                 type="button"
                 onClick={() => goTo(i)}
                 className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm transition ${
                   i === step
-                    ? "bg-gradient-to-b from-amber-500 to-amber-600 text-white shadow-sm shadow-amber-950/50"
+                    ? "bg-amber-600 text-white shadow-sm shadow-amber-950/50"
                     : i < step
                       ? "text-emerald-400 hover:bg-zinc-800"
                       : "text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
@@ -100,14 +105,14 @@ export function CharacterWizard() {
                 >
                   {i < step ? "✓" : s.short}
                 </span>
-                <span className="hidden sm:inline">{s.title}</span>
+                <span className="hidden sm:inline">{t(s.key)}</span>
               </button>
             </li>
           ))}
         </ol>
         <div className="mt-2 h-1 overflow-hidden rounded-full bg-zinc-800">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-amber-600 via-amber-500 to-amber-400 transition-all duration-500 ease-out"
+            className="h-full rounded-full bg-amber-500 transition-all duration-500 ease-out"
             style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
           />
         </div>
@@ -132,10 +137,13 @@ export function CharacterWizard() {
           disabled={step === 0}
           className="rounded-md border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition hover:border-zinc-500 disabled:opacity-40"
         >
-          ← Anterior
+          ← {t("wizard.prev")}
         </button>
         <span className="text-xs text-zinc-600">
-          Etapa {step + 1} de {STEPS.length}
+          {t("wizard.stepOf", {
+            current: fmt.num(step + 1),
+            total: fmt.num(STEPS.length),
+          })}
         </span>
         {step < STEPS.length - 1 ? (
           <button
@@ -143,12 +151,10 @@ export function CharacterWizard() {
             onClick={() => goTo(step + 1)}
             className="btn-primary rounded-md px-4 py-2 text-sm font-medium text-white"
           >
-            Próximo →
+            {t("wizard.next")} →
           </button>
         ) : (
-          <span className="text-sm text-zinc-600">
-            Use &quot;Finalizar criação&quot; acima
-          </span>
+          <span className="text-sm text-zinc-600">{t("wizard.finishHint")}</span>
         )}
       </footer>
     </div>

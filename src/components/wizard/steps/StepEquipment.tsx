@@ -3,29 +3,31 @@
 import { useState } from "react";
 import { useWizard } from "../context";
 import { Badge, Card, Field, NumberInput, Select, TextInput } from "@/components/ui";
-import { ARMORS, getBackground, getClass, getWeapon, WEAPONS } from "@/data";
+import { useT, useData, useFormat } from "@/lib/i18n/client";
 import { classEntries } from "@/domain/calc";
-import { lbToKg } from "@/domain/units";
 import type { InventoryItem } from "@/domain/types";
 
-const CATEGORY_LABEL: Record<InventoryItem["category"], string> = {
-  arma: "Arma",
-  armadura: "Armadura",
-  escudo: "Escudo",
-  ferramenta: "Ferramenta",
-  outro: "Outro",
+const CATEGORY_KEYS: Record<InventoryItem["category"], string> = {
+  arma: "wizard.equipment.catWeapon",
+  armadura: "wizard.equipment.catArmor",
+  escudo: "wizard.equipment.catShield",
+  ferramenta: "wizard.equipment.catTool",
+  outro: "wizard.equipment.catOther",
 };
 
 export function StepEquipment() {
   const { doc, update } = useWizard();
+  const t = useT();
+  const d = useData();
+  const fmt = useFormat();
   const classes = classEntries(doc)
-    .map((e) => getClass(e.classId))
+    .map((e) => d.getClass(e.classId))
     .filter((c): c is NonNullable<typeof c> => Boolean(c));
-  const bg = getBackground(doc.identity.backgroundId);
+  const bg = d.getBackground(doc.identity.backgroundId);
 
   function addItem(item: Omit<InventoryItem, "id">) {
-    update((d) => {
-      d.inventory.push({ ...item, id: crypto.randomUUID() });
+    update((doc) => {
+      doc.inventory.push({ ...item, id: crypto.randomUUID() });
     });
   }
 
@@ -39,13 +41,21 @@ export function StepEquipment() {
         (i) => i.name === s.name && i.catalogId === s.catalogId,
       );
       if (exists) continue;
-      const weapon = s.catalogId ? getWeapon(s.catalogId) : undefined;
-      const armor = s.catalogId ? ARMORS.find((a) => a.id === s.catalogId) : undefined;
+      const weapon = s.catalogId ? d.getWeapon(s.catalogId) : undefined;
+      const armor = s.catalogId
+        ? d.ARMORS.find((a) => a.id === s.catalogId)
+        : undefined;
       addItem({
         name: s.name,
         qty: s.qty,
         weight: weapon?.weight ?? armor?.weight ?? null,
-        category: weapon ? "arma" : armor?.category === "escudo" ? "escudo" : armor ? "armadura" : "outro",
+        category: weapon
+          ? "arma"
+          : armor?.category === "escudo"
+            ? "escudo"
+            : armor
+              ? "armadura"
+              : "outro",
         catalogId: s.catalogId,
         equipped: false,
         description: "",
@@ -56,7 +66,7 @@ export function StepEquipment() {
   function addFromCatalog(catalogId: string, kind: "arma" | "armadura") {
     if (!catalogId) return;
     if (kind === "arma") {
-      const w = getWeapon(catalogId);
+      const w = d.getWeapon(catalogId);
       if (!w) return;
       addItem({
         name: w.name,
@@ -68,7 +78,7 @@ export function StepEquipment() {
         description: "",
       });
     } else {
-      const a = ARMORS.find((x) => x.id === catalogId);
+      const a = d.ARMORS.find((x) => x.id === catalogId);
       if (!a) return;
       addItem({
         name: a.name,
@@ -86,33 +96,37 @@ export function StepEquipment() {
 
   return (
     <div className="flex flex-col gap-5">
-      <Card title="Equipamento inicial sugerido">
+      <Card title={t("wizard.equipment.startingTitle")}>
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={addStartingEquipment}
             className="rounded-md border border-amber-700 px-3 py-1.5 text-sm text-amber-400 transition hover:bg-amber-950/50"
           >
-            + Adicionar equipamento da classe/antecedente
+            + {t("wizard.equipment.addStarting")}
           </button>
           <span className="text-xs text-zinc-500">
-            {classes.map((c) => c.name).join(" + ") || "Classe"} ·{" "}
-            {bg?.name ?? "Antecedente"}
+            {classes.map((c) => c.name).join(" + ") ||
+              t("wizard.equipment.classFallback")}{" "}
+            · {bg?.name ?? t("wizard.equipment.backgroundFallback")}
           </span>
         </div>
       </Card>
 
-      <Card title={`Inventário (${doc.inventory.length} itens · ${equippedCount} equipados)`}>
+      <Card
+        title={t("wizard.equipment.inventoryTitle", {
+          items: fmt.num(doc.inventory.length),
+          equipped: fmt.num(equippedCount),
+        })}
+      >
         {doc.inventory.length === 0 ? (
-          <p className="text-sm text-zinc-500">
-            Inventário vazio. Adicione o equipamento inicial ou itens do
-            catálogo abaixo.
-          </p>
+          <p className="text-sm text-zinc-500">{t("wizard.equipment.empty")}</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {doc.inventory.map((item) => {
               const affectsAc =
-                item.equipped && (item.category === "armadura" || item.category === "escudo");
+                item.equipped &&
+                (item.category === "armadura" || item.category === "escudo");
               return (
                 <li
                   key={item.id}
@@ -121,17 +135,21 @@ export function StepEquipment() {
                   <span className="text-sm font-medium text-zinc-200">
                     {item.name}
                   </span>
-                  <Badge>{CATEGORY_LABEL[item.category]}</Badge>
-                  {item.catalogId && <Badge color="blue">catálogo</Badge>}
-                  {affectsAc && <Badge color="green">afeta a CA</Badge>}
+                  <Badge>{t(CATEGORY_KEYS[item.category])}</Badge>
+                  {item.catalogId && (
+                    <Badge color="blue">{t("wizard.equipment.catalogBadge")}</Badge>
+                  )}
+                  {affectsAc && (
+                    <Badge color="green">{t("wizard.equipment.affectsAc")}</Badge>
+                  )}
                   <div className="ml-auto flex items-center gap-3">
                     <div className="flex items-center gap-1 text-xs text-zinc-500">
-                      Qtd
+                      {t("wizard.equipment.qty")}
                       <NumberInput
                         value={item.qty}
                         onChange={(n) =>
-                          update((d) => {
-                            const found = d.inventory.find((i) => i.id === item.id);
+                          update((doc) => {
+                            const found = doc.inventory.find((i) => i.id === item.id);
                             if (found) found.qty = n;
                           })
                         }
@@ -144,30 +162,34 @@ export function StepEquipment() {
                         type="checkbox"
                         checked={item.equipped}
                         onChange={(e) =>
-                          update((d) => {
-                            const found = d.inventory.find((i) => i.id === item.id);
+                          update((doc) => {
+                            const found = doc.inventory.find((i) => i.id === item.id);
                             if (found) found.equipped = e.target.checked;
                           })
                         }
                         className="accent-amber-600"
                       />
-                      Equipado
+                      {t("wizard.equipment.equipped")}
                     </label>
                     <button
                       type="button"
                       onClick={() =>
-                        update((d) => {
-                          d.inventory = d.inventory.filter((i) => i.id !== item.id);
+                        update((doc) => {
+                          doc.inventory = doc.inventory.filter(
+                            (i) => i.id !== item.id,
+                          );
                         })
                       }
                       className="text-xs text-zinc-600 transition hover:text-red-400"
                     >
-                      remover
+                      {t("wizard.equipment.remove")}
                     </button>
                   </div>
                   {item.weight != null && (
                     <span className="w-full text-xs text-zinc-600">
-                      peso unitário: {lbToKg(item.weight)} kg
+                      {t("wizard.equipment.unitWeight", {
+                        value: fmt.weight(item.weight),
+                      })}
                     </span>
                   )}
                 </li>
@@ -178,7 +200,7 @@ export function StepEquipment() {
       </Card>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Card title="Adicionar arma do catálogo">
+        <Card title={t("wizard.equipment.addWeaponTitle")}>
           <Select
             defaultValue=""
             onChange={(e) => {
@@ -186,8 +208,8 @@ export function StepEquipment() {
               e.target.value = "";
             }}
           >
-            <option value="">Escolha uma arma...</option>
-            {WEAPONS.map((w) => (
+            <option value="">{t("wizard.equipment.chooseWeapon")}</option>
+            {d.WEAPONS.map((w) => (
               <option key={w.id} value={w.id}>
                 {w.name} ({w.damage} {w.damageType})
               </option>
@@ -195,7 +217,7 @@ export function StepEquipment() {
           </Select>
         </Card>
 
-        <Card title="Adicionar armadura/escudo do catálogo">
+        <Card title={t("wizard.equipment.addArmorTitle")}>
           <Select
             defaultValue=""
             onChange={(e) => {
@@ -203,8 +225,8 @@ export function StepEquipment() {
               e.target.value = "";
             }}
           >
-            <option value="">Escolha uma armadura...</option>
-            {ARMORS.map((a) => (
+            <option value="">{t("wizard.equipment.chooseArmor")}</option>
+            {d.ARMORS.map((a) => (
               <option key={a.id} value={a.id}>
                 {a.name}
               </option>
@@ -223,6 +245,7 @@ function CustomItemForm({
 }: {
   onAdd: (item: Omit<InventoryItem, "id">) => void;
 }) {
+  const t = useT();
   const [name, setName] = useState("");
   const [qty, setQty] = useState(1);
   const [category, setCategory] = useState<InventoryItem["category"]>("outro");
@@ -244,28 +267,28 @@ function CustomItemForm({
   }
 
   return (
-    <Card title="Adicionar item personalizado">
+    <Card title={t("wizard.equipment.customTitle")}>
       <div className="grid gap-3 sm:grid-cols-[1fr_100px_140px_auto] sm:items-end">
-        <Field label="Nome">
+        <Field label={t("wizard.name")}>
           <TextInput
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Ex: Corda de 15 metros"
+            placeholder={t("wizard.equipment.namePlaceholder")}
           />
         </Field>
-        <Field label="Qtd">
+        <Field label={t("wizard.equipment.qty")}>
           <NumberInput value={qty} onChange={setQty} min={1} max={999} />
         </Field>
-        <Field label="Categoria">
+        <Field label={t("wizard.equipment.category")}>
           <Select
             value={category}
             onChange={(e) =>
               setCategory(e.target.value as InventoryItem["category"])
             }
           >
-            {Object.entries(CATEGORY_LABEL).map(([k, v]) => (
+            {Object.entries(CATEGORY_KEYS).map(([k, key]) => (
               <option key={k} value={k}>
-                {v}
+                {t(key)}
               </option>
             ))}
           </Select>
@@ -275,7 +298,7 @@ function CustomItemForm({
           onClick={submit}
           className="btn-primary h-9 rounded-md px-4 text-sm font-medium text-white"
         >
-          Adicionar
+          {t("wizard.equipment.add")}
         </button>
       </div>
     </Card>

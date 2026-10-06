@@ -1,4 +1,4 @@
-import type { AbilityKey, SkillId } from "../domain/types";
+import type { AbilityKey, SkillId } from "../../domain/types";
 
 export type SkillDef = {
   id: SkillId;

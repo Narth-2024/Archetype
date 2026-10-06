@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { useT } from "@/lib/i18n/client";
 
 function subscribe(callback: () => void) {
   const observer = new MutationObserver(callback);
@@ -26,14 +27,15 @@ function toggleTheme() {
 }
 
 export function ThemeToggle() {
+  const t = useT();
   const light = useSyncExternalStore(subscribe, isLight, () => false);
 
   return (
     <button
       type="button"
       onClick={toggleTheme}
-      aria-label={light ? "Ativar tema escuro" : "Ativar tema claro"}
-      title={light ? "Tema escuro" : "Tema claro"}
+      aria-label={light ? t("pages.theme.enableDark") : t("pages.theme.enableLight")}
+      title={light ? t("pages.theme.darkTitle") : t("pages.theme.lightTitle")}
       className="flex h-9 w-9 items-center justify-center rounded-md border border-zinc-700 text-zinc-400 transition hover:border-amber-600 hover:text-amber-400"
     >
       {light ? (

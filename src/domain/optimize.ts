@@ -1,7 +1,14 @@
 import type { AbilityKey, CharacterDoc } from "./types";
 import { ABILITY_KEYS } from "./types";
-import { classAbilityPriority, getRace, getSubrace } from "../data";
+import { PT_BUNDLE } from "../data";
+import type { DataBundle } from "../data";
 import { abilityMod, classEntries } from "./calc";
+
+function fill(template: string, args: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (m, k: string) =>
+    k in args ? args[k] : m,
+  );
+}
 
 export const POINT_COSTS: Record<number, number> = {
   8: 0,
@@ -32,7 +39,7 @@ export type Suggestion = {
   note: string;
 };
 
-function weightsFor(c: CharacterDoc): Record<AbilityKey, number> {
+function weightsFor(c: CharacterDoc, d: DataBundle): Record<AbilityKey, number> {
   const weights: Record<AbilityKey, number> = {
     str: 0,
     dex: 0.5,
@@ -45,7 +52,7 @@ function weightsFor(c: CharacterDoc): Record<AbilityKey, number> {
   const total = entries.reduce((a, e) => a + e.level, 0) || 1;
   for (const e of entries) {
     const share = e.level / total;
-    const priority = classAbilityPriority(e.classId);
+    const priority = d.classAbilityPriority(e.classId);
     for (const key of priority.primary) weights[key] += (4 * share) / priority.primary.length;
     for (const key of priority.secondary) weights[key] += share / priority.secondary.length;
   }
@@ -153,16 +160,16 @@ function chooseFlex(
   return { choices: best, score: bestScore };
 }
 
-export function suggestAbilities(c: CharacterDoc): Suggestion {
-  const race = getRace(c.identity.raceId);
-  const subrace = getSubrace(c.identity.subraceId);
+export function suggestAbilities(c: CharacterDoc, d: DataBundle = PT_BUNDLE): Suggestion {
+  const race = d.getRace(c.identity.raceId);
+  const subrace = d.getSubrace(c.identity.subraceId);
   const fixed: Partial<Record<AbilityKey, number>> = { ...(race?.abilityBonus.fixed ?? {}) };
   for (const key of ABILITY_KEYS) {
     const bonus = subrace?.abilityBonus?.[key] ?? 0;
     if (bonus) fixed[key] = (fixed[key] ?? 0) + bonus;
   }
   const flexible = race?.abilityBonus.flexible;
-  const weights = weightsFor(c);
+  const weights = weightsFor(c, d);
 
   const mode = c.identity.abilityMode;
   const candidates =
@@ -183,13 +190,19 @@ export function suggestAbilities(c: CharacterDoc): Suggestion {
   if (!best) throw new Error("sem candidatos");
 
   const entries = classEntries(c);
-  const classNames = entries.map((e) => e.classId).join(" + ");
+  const classNames = entries
+    .map((e) => d.getClass(e.classId)?.name ?? e.classId)
+    .join(" + ");
   const ranked = [...ABILITY_KEYS].sort((a, b) => weights[b] - weights[a]);
   const top = ranked
     .filter((k) => weights[k] > 0)
     .slice(0, 3)
-    .map((k) => k.toUpperCase());
+    .map((k) => d.ABILITY_ABBR[k] ?? k.toUpperCase());
 
-  best.note = `Balanceado${classNames ? ` (${classNames})` : ""}: prioriza ${top.join(", ") || "CON/DES"}.`;
+  const template = classNames ? d.LABELS.suggestion : d.LABELS.suggestionNone;
+  best.note = fill(template, {
+    classes: classNames ? ` (${classNames})` : "",
+    priorities: top.join(", ") || `${d.ABILITY_ABBR.con ?? "CON"}/${d.ABILITY_ABBR.dex ?? "DES"}`,
+  });
   return best;
 }

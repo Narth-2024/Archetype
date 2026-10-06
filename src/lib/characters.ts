@@ -20,7 +20,7 @@ function summaryFrom(doc: CharacterDoc) {
   const entries = classEntries(doc);
   const primary = entries.length > 0 ? entries[0].classId : "";
   return {
-    name: doc.identity.name || "Sem nome",
+    name: doc.identity.name || "",
     level: totalLevel(doc),
     classId: primary,
     raceId: doc.identity.raceId,

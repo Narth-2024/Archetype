@@ -12,15 +12,15 @@ export type CardAccent =
   | "cyan"
   | "teal";
 
-const CARD_ACCENTS: Record<CardAccent, { edge: string; title: string; tint: string }> = {
-  amber: { edge: "border-l-amber-500", title: "text-amber-400", tint: "from-amber-500/[0.08]" },
-  emerald: { edge: "border-l-emerald-500", title: "text-emerald-400", tint: "from-emerald-500/[0.08]" },
-  sky: { edge: "border-l-sky-400", title: "text-sky-400", tint: "from-sky-400/[0.08]" },
-  violet: { edge: "border-l-violet-400", title: "text-violet-400", tint: "from-violet-400/[0.08]" },
-  rose: { edge: "border-l-rose-400", title: "text-rose-400", tint: "from-rose-400/[0.08]" },
-  orange: { edge: "border-l-orange-400", title: "text-orange-400", tint: "from-orange-400/[0.08]" },
-  cyan: { edge: "border-l-cyan-400", title: "text-cyan-400", tint: "from-cyan-400/[0.08]" },
-  teal: { edge: "border-l-teal-400", title: "text-teal-400", tint: "from-teal-400/[0.08]" },
+const CARD_ACCENTS: Record<CardAccent, { edge: string; title: string }> = {
+  amber: { edge: "border-l-amber-500", title: "text-amber-400" },
+  emerald: { edge: "border-l-emerald-500", title: "text-emerald-400" },
+  sky: { edge: "border-l-sky-400", title: "text-sky-400" },
+  violet: { edge: "border-l-violet-400", title: "text-violet-400" },
+  rose: { edge: "border-l-rose-400", title: "text-rose-400" },
+  orange: { edge: "border-l-orange-400", title: "text-orange-400" },
+  cyan: { edge: "border-l-cyan-400", title: "text-cyan-400" },
+  teal: { edge: "border-l-teal-400", title: "text-teal-400" },
 };
 
 export function Card({
@@ -38,9 +38,7 @@ export function Card({
   return (
     <section
       className={`rounded-lg border border-zinc-800 bg-zinc-900/50 shadow-sm shadow-black/5 p-5 ${
-        a
-          ? `border-l-2 ${a.edge} bg-gradient-to-b ${a.tint} to-transparent`
-          : "bg-gradient-to-b from-white/[0.04] to-transparent"
+        a ? `border-l-2 ${a.edge}` : ""
       } ${className}`}
     >
       {title && (

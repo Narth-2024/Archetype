@@ -5,19 +5,21 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Card, Field, TextInput } from "@/components/ui";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useT } from "@/lib/i18n/client";
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const router = useRouter();
+  const t = useT();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (password !== confirm) {
-      setError("As senhas não conferem.");
+      setError(t("pages.auth.mismatch"));
       return;
     }
     setBusy(true);
@@ -32,12 +34,12 @@ export default function RegisterPage() {
         const data = (await res.json().catch(() => null)) as {
           error?: string;
         } | null;
-        setError(data?.error ?? "Falha ao criar a conta.");
+        setError(data?.error ?? t("pages.auth.signUpFailed"));
         return;
       }
       router.push("/");
     } catch {
-      setError("Falha de conexão.");
+      setError(t("pages.auth.connectionFailed"));
     } finally {
       setBusy(false);
     }
@@ -47,12 +49,12 @@ export default function RegisterPage() {
     <main className="flex min-h-screen flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-5 flex items-center justify-between">
-          <h1 className="title-gold text-2xl font-bold">Archetype</h1>
+          <h1 className="title-gold text-2xl font-bold">{t("app.name")}</h1>
           <ThemeToggle />
         </div>
-        <Card title="Criar conta" accent="emerald">
+        <Card title={t("pages.auth.createAccount")} accent="emerald">
           <form onSubmit={submit} className="flex flex-col gap-3">
-            <Field label="Usuário" hint="3 a 32 caracteres: letras, números ou _">
+            <Field label={t("pages.auth.username")} hint={t("pages.auth.usernameHint")}>
               <TextInput
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -61,7 +63,7 @@ export default function RegisterPage() {
                 required
               />
             </Field>
-            <Field label="Senha" hint="mínimo de 6 caracteres">
+            <Field label={t("pages.auth.password")} hint={t("pages.auth.passwordHint")}>
               <TextInput
                 type="password"
                 value={password}
@@ -70,7 +72,7 @@ export default function RegisterPage() {
                 required
               />
             </Field>
-            <Field label="Repetir senha">
+            <Field label={t("pages.auth.confirmPassword")}>
               <TextInput
                 type="password"
                 value={confirm}
@@ -85,16 +87,16 @@ export default function RegisterPage() {
               disabled={busy}
               className="btn-success mt-1 rounded-md px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50"
             >
-              {busy ? "Criando..." : "Criar conta"}
+              {busy ? t("pages.auth.creatingAccount") : t("pages.auth.createAccount")}
             </button>
           </form>
           <p className="mt-4 text-center text-sm text-zinc-500">
-            Já tem conta?{" "}
+            {t("pages.auth.hasAccount")}{" "}
             <Link
               href="/login"
               className="text-amber-500 transition hover:text-amber-400"
             >
-              Entrar
+              {t("pages.auth.signIn")}
             </Link>
           </p>
         </Card>

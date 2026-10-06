@@ -1,4 +1,4 @@
-import type { AbilityKey } from "../domain/types";
+import type { AbilityKey } from "../../domain/types";
 
 export type FeatRequirement =
   | { kind: "ability"; ability: AbilityKey; value: number; label: string }

@@ -1,0 +1,34 @@
+import type { AbilityKey, SkillId } from "../../domain/types";
+
+export type SkillDef = {
+  id: SkillId;
+  name: string;
+  ability: AbilityKey;
+};
+
+export const SKILLS: SkillDef[] = [
+  { id: "acrobatics", name: "Acrobatics", ability: "dex" },
+  { id: "animal_handling", name: "Animal Handling", ability: "wis" },
+  { id: "arcana", name: "Arcana", ability: "int" },
+  { id: "athletics", name: "Athletics", ability: "str" },
+  { id: "deception", name: "Deception", ability: "cha" },
+  { id: "history", name: "History", ability: "int" },
+  { id: "insight", name: "Insight", ability: "wis" },
+  { id: "intimidation", name: "Intimidation", ability: "cha" },
+  { id: "investigation", name: "Investigation", ability: "int" },
+  { id: "medicine", name: "Medicine", ability: "wis" },
+  { id: "nature", name: "Nature", ability: "int" },
+  { id: "perception", name: "Perception", ability: "wis" },
+  { id: "performance", name: "Performance", ability: "cha" },
+  { id: "persuasion", name: "Persuasion", ability: "cha" },
+  { id: "religion", name: "Religion", ability: "int" },
+  { id: "sleight_of_hand", name: "Sleight of Hand", ability: "dex" },
+  { id: "stealth", name: "Stealth", ability: "dex" },
+  { id: "survival", name: "Survival", ability: "wis" },
+];
+
+export function getSkill(id: SkillId | string): SkillDef {
+  const skill = SKILLS.find((s) => s.id === id);
+  if (!skill) throw new Error(`Unknown skill: ${id}`);
+  return skill;
+}
