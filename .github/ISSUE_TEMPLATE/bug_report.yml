@@ -1,0 +1,56 @@
+name: Bug report
+description: Report something that is not working
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug.
+      placeholder: When I open the sheet, the AC shows 0 instead of 15...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The smaller the reproduction steps, the faster we can fix it.
+      placeholder: |
+        1. Create a character
+        2. Open the sheet
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: dropdown
+    id: locale
+    attributes:
+      label: Interface language
+      options:
+        - PT (português)
+        - EN (English)
+        - ES (español)
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      placeholder: Chrome 141 / Firefox 145 / Safari 26...
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched the existing issues and this is not a duplicate
+          required: true
+        - label: I am using the latest version of the site or main branch
+          required: true

@@ -9,6 +9,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "tsc --rootDir src --outDir .test-build --module commonjs --target es2022 --moduleResolution node --esModuleInterop --skipLibCheck src/domain/units.ts src/domain/optimize.ts src/domain/calc.ts src/domain/migrate.ts src/domain/create.ts && node tests/domain.test.cjs",
+    "test:e2e": "playwright test",
     "db:migrate": "node scripts/migrate-to-turso.mjs"
   },
   "dependencies": {
@@ -18,6 +19,7 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24.19.1",
     "@types/react": "^19",
