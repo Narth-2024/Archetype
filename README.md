@@ -1,227 +1,213 @@
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-16-black?style=flat&logo=next.js&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/React-19-61dafb?style=flat&logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178c6?style=flat&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-4-38bdf8?style=flat&logo=tailwindcss&logoColor=black" alt="Tailwind CSS" />
+</p>
+
 # Archetype
 
-**Archetype** é um sistema para **criar e organizar fichas de personagens de D&D 5e**,
-pensado para jogadores iniciantes: um construtor guiado passo a passo com cálculos
-automáticos e uma ficha digital pronta para a sessão.
+**Archetype** is a guided character builder and digital sheet for **Dungeons & Dragons 5th Edition**.
+It walks you through character creation in nine steps, calculates every number for you, and keeps
+your sheets ready for the table — in **English, Spanish, and Portuguese**.
 
-## Stack
+**Live demo:** https://archetype-blush.vercel.app
 
-- **Next.js 16** (App Router) + **TypeScript**
-- **Tailwind CSS 4**
-- **SQLite** via `@libsql/client`: arquivo local (`data/dev.db`) sem nenhuma
-  configuração em desenvolvimento; em produção usa **Turso** (libSQL na nuvem,
-  plano gratuito), usando as variáveis `TURSO_DATABASE_URL` e `TURSO_AUTH_TOKEN`
+## Why Archetype
 
-## Como rodar
+- **Beginner-friendly by design** — a step-by-step wizard with inline warnings explains what each
+  choice means instead of sending you back to the rulebook.
+- **Every value derived, nothing hard-coded** — ability modifiers, proficiency bonus, AC, HP,
+  saves, attacks, spell slots, and spellcasting DC are computed at render time by a pure,
+  tested rules engine (`src/domain/calc.ts`, 54 unit checks). Change a level, race, or score and
+  everything recalculates instantly.
+- **Transparent formulas** — each derived value shows its own breakdown
+  (e.g. `AC = 16 chain mail + 2 shield`).
+- **SRD content included** — 12 classes, 39 subclasses, 10 races with 8 subraces, 38 feats,
+  13 backgrounds, 30 weapons, 13 armors, and 214 spells (levels 0–9) with a public spell
+  compendium grouped by school.
+
+## Features
+
+### Character builder
+
+- **Nine guided steps:** Identity → Abilities → Features → Skills → Equipment → Combat →
+  Attacks → Spells → Review, with autosave after every change.
+- **Three ability-score modes:** Point Buy (27 points with standard costs), Standard Array, and
+  Manual — plus a **balanced suggestion engine** that exhaustively searches the budget for your
+  class, including racial bonuses.
+- **Multiclassing** with combined proficiency bonus, saves, HP, and spell-slot tables
+  (full/half casters merged, pact slots tracked separately); multiclass prerequisites are shown
+  as warnings, never blockers.
+- **Budget counters** for saves, skills, languages, and tools per source (class / background /
+  race) — you may exceed them, but the counter turns red.
+- **Subraces, subclasses, and feats** — subclass features unlock by level, and feat
+  prerequisites (ability, proficiency, spellcasting) are validated with clear warnings while
+  ability-score and HP bonuses feed the calculations.
+- **214 SRD spells** with preparation, known spells, and combined spell slots.
+
+### Digital sheet
+
+- **Combat quick bar** — AC, HP, initiative, and speed always visible; damage/healing in one tap
+  and long rest.
+- **Full sheet cards** — abilities, combat, skills, saves, proficiencies, inventory, attacks,
+  spells, features, and notes.
+- **Character photo** — upload a picture (compressed client-side to ≤ 512 px JPEG) directly from
+  the sheet.
+- **Lore editor** — write your character's backstory on the sheet or import a plain-text file
+  (`.txt`, `.md`, `.csv`).
+- **Units toggle** — distances and weights switch between **metric (m, kg)** and
+  **imperial (ft, lb)**; spell text follows the selected locale.
+- **Light & dark themes** applied before first paint (no flash), persisted per browser.
+
+### Localization
+
+- Full UI and game content in **English, Spanish, and Portuguese** — switchable from any page
+  and persisted in a cookie.
+- Game catalogs (classes, spells, gear, schools, …) are maintained per locale under
+  `src/data/{pt,en,es}` and resolved at request time through a typed bundle.
+
+### Accounts
+
+- Registration and login with password hashing via Node's built-in `scrypt`; sessions live in an
+  httpOnly cookie for 30 days (stored as a SHA-256 hash).
+- Every sheet is scoped to its owner — users only ever see, edit, or delete their own characters.
+
+## Tech stack
+
+- **Next.js 16** (App Router) + **React 19** + **TypeScript 5**
+- **Tailwind CSS 4** — classic book-inspired design: parchment & ink palette, serif headings
+  (EB Garamond), flat surfaces, no gradients
+- **libSQL** via `@libsql/client` — a local SQLite file (`data/dev.db`) with zero setup in
+  development; **[Turso](https://turso.tech)** (free tier) in production through
+  `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN`
+
+## Getting started
 
 ```bash
 npm install
-npm run dev         # http://localhost:3000 (o schema é criado sozinho)
+npm run dev        # http://localhost:3000 — schema is created automatically
 ```
 
-## Funcionalidades
+| Script               | Description                          |
+| -------------------- | ------------------------------------ |
+| `npm run dev`        | Development server                   |
+| `npm run build`      | Production build                     |
+| `npm run start`      | Serve the production build           |
+| `npm run lint`       | ESLint                               |
+| `npm run typecheck`  | `tsc --noEmit`                       |
+| `npm run db:migrate` | Migrate local data to Turso          |
 
-- **Construtor em 9 etapas**: Identidade → Atributos → Características →
-  Perícias → Equipamento → Combate → Ataques → Magias → Revisão
-- **Multiclasse**: várias classes com níveis somados (limite 20); PB, salvamentos,
-  PV, slots (tabela combinada full/half + pacto separado) e atributo de
-  conjuração calculados sobre o conjunto; pré-requisitos de multiclasse exibidos
-  como aviso (não bloqueiam)
-- **Atributos com 3 modos**: Pontos (27, custos 8=0…15=9), Array padrão e Livre,
-  mais botão **✨ Sugerir distribuição** (otimizador balanceado por classe:
-  busca exaustiva dentro do orçamento, com bônus racial considerado)
-- **Orçamentos com aviso**: contadores de salvamentos/perícias/idiomas/ferramentas
-  por fonte (classe/antecedente/raça); exceder é permitido, mas fica vermelho
-- **Unidades em metros**: deslocamento, visão no escuro, alcances e magias são
-  exibidos convertidos de pés para metros (1 pé = 0,3048 m; dados seguem em pés)
-- **Cálculos automáticos**: modificadores de atributo, bônus de proficiência
-  pelo nível total, CA (conforme armadura equipada + escudo + DES), iniciativa,
-  deslocamento, PV máximo (dado da 1ª classe + CON, demais classes fixos),
-  bônus/dano de ataques, CD e ataque mágico, slots de magia
-- **Fórmulas transparentes**: cada valor deriva mostra de onde veio (ex.: `CA = 16 malha + 2 escudo`)
-- **Ficha digital em cards**: atributos, combate, perícias, resistências,
-  proficiências, inventário, ataques, magias, características e anotações
-- **Barra rápida de combate**: CA, PV, iniciativa e deslocamento sempre
-  visíveis; curar/dano com um toque e descanso longo
-- **Persistência**: personagens salvos em SQLite, rascunho salvo
-  automaticamente durante a edição; excluir personagem com confirmação e
-  tratamento de erro (recarrega a lista se o registro já não existir)
-- **Multiusuário**: cadastro e login com senha (scrypt nativo, hash salvo no
-  banco), sessão em cookie httpOnly de 30 dias (token guardado como hash
-  SHA-256), fichas ligadas ao dono (`characters.user_id`) — cada conta vê,
-  edita e apaga **apenas as suas**; `/login` e `/register` são públicos, o
-  compêndio é público e todo o resto exige sessão (middleware redireciona);
-  o primeiro usuário a se cadastrar adota as fichas órfãs de antes da migração
-- **Subraças (v3)**: as 8 subraças SRD (anao colinano/da montanha, elfo alto/
-  silvestre, halfling leve/robusto, gnomo da floresta/da rocha) com bônus de
-  atributo, deslocamento, visão no escuro, traços e proficiências aplicados aos
-  cálculos; seleção na etapa Identidade
-- **Subclasses (v3)**: as 37 subclasses do SRD com recursos por nível, um campo
-  por entrada de multiclasse na etapa Identidade (com aviso se o nível ainda não
-  chegou) e recursos exibidos na ficha conforme o nível atual
-- **Talentos/feats (v3)**: os 38 talentos do SRD em um card na etapa
-  Características — livre para marcar/desmarcar, com aviso vermelho quando o
-  pré-requisito (atributo, proficiência ou conjuração) não está cumprido;
-  bônus de atributo e PV (ex.: Durão) entram nos cálculos
-- **Magias 0–9**: 214 magias SRD em português, incluindo as 150 de níveis 4–9
-- **Compêndio** (`/compendium`): 8 escolas de magia com descrição e todas as
-  214 magias agrupadas por escola (fundo sem aurora, visual mais direto);
-  conteúdo informativo, sem vínculo com a ficha
-- **Tema claro/escuro**: botão de alternância no dashboard, no compêndio, no
-  construtor e na ficha; escolha salva no navegador (padrão: preferência do
-  sistema), sem "piscar" ao carregar — o tema é aplicado antes da primeira
-  pintura
-- **Visual refinado**: base azul-noite com aurora sutil (nada de preto puro),
-  títulos em gradiente dourado, botões primários com gradiente e sombra
-  interna, acentos coloridos com significado por seção (atributos dourado,
-  combate vermelho, magias violeta, perícias azul, inventário verde...), cards
-  com filete lateral colorido, tipografia Geist, foco visível, barra de
-  progresso animada, transição entre etapas, hover com elevação, checkboxes
-  âmbar, barra de rolagem própria e suporte a `prefers-reduced-motion`
-- **Exclusão em duas etapas**: "Excluir" vira "Confirmar exclusão" + "Cancelar"
-  no próprio card (sem diálogo nativo do navegador) e o card sai da lista na
-  hora, com restauração automática se a requisição falhar
-
-## Scripts
-
-| Script              | Descrição                             |
-| ------------------- | ------------------------------------- |
-| `npm run dev`       | Servidor de desenvolvimento           |
-| `npm run build`     | Build de produção                     |
-| `npm run start`     | Iniciar produção                      |
-| `npm run lint`      | ESLint                                |
-| `npm run typecheck` | `tsc --noEmit`                        |
-| `npm run db:migrate`| Migra dados locais para o Turso       |
-
-## Estrutura
+## Project structure
 
 ```
-scripts/
-  migrate-to-turso.mjs
 src/
-  data/                    # catálogos dirigidos por dados
-    skills.ts              # 18 perícias com atributo
-    races.ts               # 10 raças + 8 subraças (SubraceDef)
-    subclasses.ts          # 37 subclasses com recursos por nível
-    feats.ts               # 38 talentos (pré-requisitos, ASI)
-    schools.ts             # 8 escolas (SRD)
-    classes.ts             # 12 classes + prioridades e pré-requisitos
-    backgrounds.ts         # 13 antecedentes (languageChoices/toolChoices)
-    weapons.ts, armors.ts  # armas e armaduras (regras de DEX na CA)
-    spells.ts              # 214 magias SRD (níveis 0–9)
-    spell-slots.ts         # tabelas de slots (full/half/pact)
-    proficiencies.ts       # opções de ferramentas/idiomas/grupos
-  domain/
-    types.ts               # CharacterDoc (schemaVersion 3)
-    create.ts              # factory de novo personagem
-    migrate.ts             # migração v1 → v2 (classes[]) → v3 (subraça/
-                           # subclasse/talentos)
-    calc.ts                # MOTOR DE CÁLCULO puro (nada é persistido derivado)
-    optimize.ts            # point buy + otimizador balanceado
-    units.ts               # conversão pés → metros, libras → kg
+  data/                    # data-driven catalogs, one bundle per locale
+    pt/ en/ es/            # identical structure; typed as DataBundle
+    index.ts               # bundleFor(locale) + legacy PT exports
   lib/
-    db.ts                  # cliente libSQL (singleton, auto-init)
-    schema.ts              # DDL aplicado no primeiro acesso
-    characters.ts          # repositório CRUD (assíncrono)
+    i18n/                  # locale/units cookies, t(), formatters, string dicts
+    db.ts                  # libSQL client (singleton, auto-init)
+    schema.ts              # DDL applied on first access
+    characters.ts          # async CRUD repository
+    auth.ts                # scrypt hashing, sessions
+  domain/                  # pure rules engine (no persistence of derived values)
+    types.ts               # CharacterDoc (schemaVersion 3)
+    calc.ts                # AC, HP, saves, attacks, slots, DC…
+    optimize.ts            # point-buy search + class-weighted suggestions
+    migrate.ts             # v1 → v2 (classes[]) → v3 (subrace/subclass/feats)
+    units.ts               # feet ↔ meters, pounds ↔ kg
   app/
-    page.tsx               # dashboard (link para o compêndio)
-    compendium/page.tsx    # escolas e magias (público)
-    character/new          # cria personagem e redireciona ao editor
-    character/[id]         # ficha digital
-    character/[id]/edit    # wizard (mesma rota para editar)
-    api/characters         # GET/POST; [id]: GET/PUT/PATCH/DELETE
-    api/health
+    page.tsx               # dashboard
+    compendium/            # schools & spells (public)
+    character/new          # creates a draft and opens the wizard
+    character/[id]         # digital sheet
+    character/[id]/edit    # wizard (same route for editing)
+    api/                   # characters, auth, health, prefs
   components/
-    ui.tsx                 # Card, Field, Toggle, Formula...
-    CharacterList.tsx
-    wizard/                # context (autosave) + 9 etapas
-    sheet/                 # ficha + barra rápida de combate
+    wizard/                # context (autosave) + 9 steps
+    sheet/                 # sheet, combat quick bar, photo, lore
+    ui.tsx                 # Card, Field, Toggle, Formula…
 ```
 
-## Modelo de dados
+## Data model
 
-Contas e sessões: tabela `users` (usuário + `password_hash` no formato
-`scrypt$salt$hash`) e `sessions` (`token_hash` = SHA-256 do cookie, usuário e
-expiração). Cada linha de `characters` tem um `user_id` — listagem e leitura
-sempre filtram por ele.
+Accounts and sessions use the `users` table (`password_hash` in the format
+`scrypt$salt$hash`) and `sessions` (`token_hash` = SHA-256 of the cookie value, user, and
+expiry). Every row in `characters` carries a `user_id`; listing and reads always filter by it.
 
-O personagem é um **documento JSON** (`CharacterDoc`, `schemaVersion: 3`)
-armazenado na coluna `data` da tabela `characters`. Documentos v1 e v2 são
-migrados automaticamente na leitura (`classId`/`level` → `classes[]`;
-v3 adiciona `identity.subraceId`, `ClassEntry.subclassId` e `feats: string[]`).
-Campos divididos em:
+Each character is a **JSON document** (`CharacterDoc`, `schemaVersion: 3`) stored in the
+`data` column. v1 and v2 documents are migrated transparently on read. Fields fall into three
+groups:
 
-1. **Inseridos pelo usuário** — `identity.classes` (multiclasse),
-   `identity.abilityMode`, `abilities.base`, `combat.hpCurrent`, inventário...
-2. **Derivados de escolhas** — bônus racial (raça), proficiências (classe/
-   antecedente/raça), slots (conjunto de classes)
-3. **Calculados em tempo de exibição** — modificadores, CA, PB (nível total),
-   bônus de perícia/ataque, PV máximo, CD mágico (`src/domain/calc.ts`)
+1. **User input** — `identity.classes` (multiclass), `identity.abilityMode`, `abilities.base`,
+   `combat.hpCurrent`, inventory, photo, lore…
+2. **Choices resolved from data** — racial bonuses, proficiencies, spell slots for the
+   class set.
+3. **Computed at render time** — modifiers, AC, proficiency bonus, save/skill/attack bonuses,
+   max HP, spell DC (`src/domain/calc.ts`).
 
-Nenhum valor calculado é salvo: mudar o nível, a raça ou um atributo
-recalcula tudo automaticamente.
+Nothing derived is ever persisted: raising a level or changing a score recalculates everything.
 
 ## API
 
-Rotas de sessão (públicas):
+Session routes (public):
 
-| Método | Rota                    | Descrição                       |
-| ------ | ----------------------- | ------------------------------- |
-| POST   | `/api/auth/register`    | Cria conta e inicia sessão      |
-| POST   | `/api/auth/login`       | Entra e inicia sessão           |
-| POST   | `/api/auth/logout`      | Encerra a sessão                |
+| Method | Route                 | Description                  |
+| ------ | --------------------- | ---------------------------- |
+| POST   | `/api/auth/register`  | Create account and sign in   |
+| POST   | `/api/auth/login`     | Sign in                      |
+| POST   | `/api/auth/logout`    | Sign out                     |
+| POST   | `/api/prefs`          | Persist locale/units cookies |
 
-Rotas de fichas (exigem sessão → 401 sem cookie válido; escopadas ao dono →
-404 para fichas de outra conta):
+Character routes (require a session → `401` without a valid cookie; owner-scoped → `404` for
+another account's sheets):
 
-| Método | Rota                    | Descrição                       |
-| ------ | ----------------------- | ------------------------------- |
-| GET    | `/api/characters`       | Lista as fichas do usuário      |
-| POST   | `/api/characters`       | Cria personagem (aceita doc)    |
-| GET    | `/api/characters/:id`   | Documento completo              |
-| PUT    | `/api/characters/:id`   | Salva documento completo        |
-| PATCH  | `/api/characters/:id`   | Atualiza PV atual/temporários   |
-| DELETE | `/api/characters/:id`   | Exclui                          |
+| Method | Route                  | Description                                  |
+| ------ | ---------------------- | -------------------------------------------- |
+| GET    | `/api/characters`      | List the current user's sheets               |
+| POST   | `/api/characters`      | Create a character (accepts a document)      |
+| GET    | `/api/characters/:id`  | Full document                                |
+| PUT    | `/api/characters/:id`  | Save a full document                         |
+| PATCH  | `/api/characters/:id`  | Update HP, photo, or lore                    |
+| DELETE | `/api/characters/:id`  | Delete                                       |
 
-## Deploy (gratuito e permanente: Vercel + Turso)
+Error responses return `{ "error": "…" }`, localized from the `fs_lang` cookie.
 
-Em produção o app não tem disco persistente, então o banco fica no **Turso**
-(plano gratuito, libSQL compatível com SQLite) e o site na **Vercel**
-(plano Hobby, gratuito).
+## Deployment (free tier: Vercel + Turso)
 
-1. **Banco (Turso)** — crie uma base e pegue as credenciais:
+Serverless instances have no persistent disk, so the database runs on **Turso** and the site on
+**Vercel** — both have generous free plans.
+
+1. **Database (Turso)** — create a database and grab the credentials:
 
    ```bash
-   turso db create fichas
-   turso db show fichas --url        # TURSO_DATABASE_URL
-   turso db tokens create fichas     # TURSO_AUTH_TOKEN
+   turso db create archetype
+   turso db show archetype --url        # TURSO_DATABASE_URL
+   turso db tokens create archetype     # TURSO_AUTH_TOKEN
    ```
 
-2. **Migre os dados locais** (opcional, se já tem fichas):
+2. **Migrate local data** (optional, if you already have sheets):
 
    ```bash
    TURSO_DATABASE_URL="libsql://..." TURSO_AUTH_TOKEN="..." npm run db:migrate
    ```
 
-3. **Site (Vercel)** — publique o repositório no GitHub e importe em
-   <https://vercel.com/new> (a integração Next.js é detectada sozinha).
-   Em *Project Settings → Environment Variables* adicione
-   `TURSO_DATABASE_URL` e `TURSO_AUTH_TOKEN`, depois faça o deploy.
-   O DDL é aplicado automaticamente no primeiro request — nenhum passo extra.
+3. **Site (Vercel)** — import the repository at <https://vercel.com/new> (the Next.js preset is
+   detected automatically). Add `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` under
+   *Project Settings → Environment Variables*, then deploy. The DDL is applied automatically on
+   the first request.
 
-Sem as variáveis do Turso (dev local), o app usa `data/dev.db`.
+Without the Turso variables (local development), the app uses `data/dev.db`.
 
-## Escopo atual e próximos passos
+## Roadmap
 
-**Incluído (v1–v3):** identidade com multiclasse, subraças, subclasses com
-recursos por nível, atributos com os 3 modos (pontos/array/livre) + otimizador,
-bônus racial flexível, humano variante, salvamentos/perícias com orçamentos e
-avisos, proficiências (idiomas e ferramentas com contadores), talentos com
-pré-requisitos, inventário com equipamento inicial, CA/PV/iniciativa/
-deslocamento em metros, ataques, magias 0–9 com slots combinados e preparação,
-compêndio de escolas, edição completa e persistência (inclusive exclusão com
-tratamento de erro), contas com login e isolamento de fichas por usuário.
+- Turn-tracked combat actions and conditions on the sheet
+- Character import/export (JSON)
+- Search and filters in the compendium
 
-**Próximos passos possíveis:** ações de combate em turnos, condições/efeitos
-rastreadas na ficha, importação/exportação de personagem (JSON), busca no
-compêndio.
+## Notes
+
+Game content is derived from the Dungeons & Dragons 5th Edition System Reference Document
+(SRD). D&D is a trademark of Wizards of the Coast; this project is not affiliated with or
+endorsed by Wizards of the Coast.
