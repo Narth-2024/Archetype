@@ -1,15 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 
 export default function NewCharacterPage() {
   const t = useT();
   const [error, setError] = useState<string | null>(null);
+  const started = useRef(false);
 
   useEffect(() => {
-    let cancelled = false;
+    if (started.current) return;
+    started.current = true;
     fetch("/api/characters", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -17,19 +19,14 @@ export default function NewCharacterPage() {
     })
       .then(async (res) => {
         if (res.status === 401) {
-          if (!cancelled) window.location.replace("/login");
+          window.location.replace("/login");
           return;
         }
         const { id } = await res.json();
-        if (!cancelled && id) window.location.replace(`/character/${id}/edit`);
-        else if (!cancelled) setError("pages.new.createFailed");
+        if (id) window.location.replace(`/character/${id}/edit`);
+        else setError("pages.new.createFailed");
       })
-      .catch(() => {
-        if (!cancelled) setError("pages.new.connectionFailed");
-      });
-    return () => {
-      cancelled = true;
-    };
+      .catch(() => setError("pages.new.connectionFailed"));
   }, []);
 
   return (

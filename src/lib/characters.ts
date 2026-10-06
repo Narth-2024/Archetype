@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { all, get, run } from "./db";
 import type { CharacterDoc, CharacterSummary } from "../domain/types";
 import { migrateDoc } from "../domain/migrate";
-import { classEntries, totalLevel } from "../domain/calc";
+import { armorClass, classEntries, maxHp, totalLevel } from "../domain/calc";
 
 type Row = {
   id: string;
@@ -30,6 +30,7 @@ function summaryFrom(doc: CharacterDoc) {
 }
 
 function toSummary(row: Row): CharacterSummary {
+  const doc = migrateDoc(JSON.parse(row.data));
   return {
     id: row.id,
     name: row.name,
@@ -38,6 +39,10 @@ function toSummary(row: Row): CharacterSummary {
     raceId: row.race_id,
     complete: row.complete === 1,
     updatedAt: row.updated_at,
+    photo: doc.photo ?? null,
+    ac: armorClass(doc).value,
+    hpCurrent: doc.combat.hpCurrent,
+    hpMax: maxHp(doc).value,
   };
 }
 

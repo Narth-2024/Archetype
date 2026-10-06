@@ -123,4 +123,8 @@ export type CharacterSummary = {
   raceId: string;
   complete: boolean;
   updatedAt: string;
+  photo: string | null;
+  ac: number;
+  hpCurrent: number;
+  hpMax: number;
 };

@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Badge } from "@/components/ui";
 import type { CharacterSummary } from "@/domain/types";
 import { useData, useFormat, useT } from "@/lib/i18n/client";
 
@@ -79,7 +81,7 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
           </p>
         </div>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-4 sm:grid-cols-2">
           {visible.map((item) => {
             const race = d.getRace(item.raceId);
             const cls = d.getClass(item.classId);
@@ -87,42 +89,64 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
             return (
               <li
                 key={item.id}
-                className="group flex flex-col justify-between rounded-lg border border-zinc-800 bg-zinc-900/50 p-5 shadow-sm shadow-black/5 transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-700/60 hover:shadow-lg hover:shadow-black/10"
+                className="group flex items-center gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4 shadow-sm shadow-black/5 transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-700/60 hover:shadow-lg hover:shadow-black/10"
               >
-                <Link href={`/character/${item.id}`} className="block">
-                  <p className="text-lg font-semibold text-zinc-100 group-hover:text-amber-400">
-                    {item.name || t("pages.list.noName")}
-                  </p>
-                  <p className="mt-1 text-sm text-zinc-400">
-                    {cls?.name ?? t("pages.list.unknownClass")}
-                    {race ? ` · ${race.name}` : ""}
-                    {` · ${t("level")} ${fmt.num(item.level)}`}
-                  </p>
-                  <p className="mt-3 text-xs text-zinc-500">
-                    {item.complete ? t("pages.list.complete") : t("pages.list.draft")} ·{" "}
-                    {t("pages.list.updated", { date: item.updatedAt.slice(0, 10) })}
-                  </p>
+                <Link
+                  href={`/character/${item.id}`}
+                  className="flex min-w-0 flex-1 items-center gap-4"
+                >
+                  <span className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-800 text-3xl font-semibold text-zinc-600">
+                    {item.photo ? (
+                      <Image
+                        src={item.photo}
+                        alt=""
+                        width={112}
+                        height={112}
+                        unoptimized
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      (item.name || "?").slice(0, 1).toUpperCase()
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2">
+                      <span className="truncate text-lg font-bold text-zinc-100 transition group-hover:text-amber-400">
+                        {item.name || t("pages.list.noName")}
+                      </span>
+                      {!item.complete && <Badge color="amber">{t("pages.list.draft")}</Badge>}
+                    </span>
+                    {race && (
+                      <span className="mt-0.5 block truncate text-sm text-zinc-400">
+                        {race.name}
+                      </span>
+                    )}
+                    <span className="mt-2 block truncate text-sm text-zinc-300">
+                      {cls?.name ?? t("pages.list.unknownClass")}
+                      {` - ${t("level")} ${fmt.num(item.level)}`}
+                    </span>
+                    <span className="mt-1 block text-xs text-zinc-500">
+                      {t("sheet.hpAbbr")}: {fmt.num(item.hpCurrent)}/{fmt.num(item.hpMax)}
+                    </span>
+                    <span className="block text-xs text-zinc-500">
+                      {t("sheet.acAbbr")}: {fmt.num(item.ac)}
+                    </span>
+                  </span>
                 </Link>
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <Link
-                    href={`/character/${item.id}/edit`}
-                    className="rounded-md border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-amber-700 hover:text-amber-400"
-                  >
-                    {t("common.edit")}
-                  </Link>
+                <div className="flex shrink-0 flex-col items-stretch gap-2">
                   {confirming ? (
                     <>
                       <button
                         onClick={() => handleDelete(item.id)}
                         disabled={pending}
-                        className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-500 disabled:opacity-50"
+                        className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-500 disabled:opacity-50"
                       >
                         {pending ? t("pages.list.deleting") : t("common.confirmDelete")}
                       </button>
                       <button
                         onClick={() => setConfirmId(null)}
                         disabled={pending}
-                        className="rounded-md border border-zinc-700 px-3 py-1.5 text-xs text-zinc-400 transition hover:border-zinc-500"
+                        className="rounded-lg border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-zinc-500"
                       >
                         {t("common.cancel")}
                       </button>
@@ -131,11 +155,17 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
                     <button
                       onClick={() => setConfirmId(item.id)}
                       disabled={pending}
-                      className="rounded-md border border-zinc-800 px-3 py-1.5 text-xs text-zinc-500 transition hover:border-red-800 hover:text-red-400 disabled:opacity-50"
+                      className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-500 disabled:opacity-50"
                     >
                       {t("common.delete")}
                     </button>
                   )}
+                  <Link
+                    href={`/character/${item.id}/edit`}
+                    className="rounded-lg bg-emerald-600 px-3 py-1.5 text-center text-xs font-medium text-white transition hover:bg-emerald-500"
+                  >
+                    {t("common.edit")}
+                  </Link>
                 </div>
               </li>
             );
