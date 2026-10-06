@@ -5,7 +5,7 @@ import { CLASSES, SCHOOLS, SPELLS } from "@/data";
 import { ftText } from "@/domain/units";
 
 export const metadata = {
-  title: "Compêndio · Fichas RPG System",
+  title: "Compêndio · Archetype",
 };
 
 const CLASS_NAME: Record<string, string> = Object.fromEntries(

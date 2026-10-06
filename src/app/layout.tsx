@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Fichas RPG System",
+  title: "Archetype",
   description: "Sistema de fichas de personagens de RPG de mesa",
 };
 

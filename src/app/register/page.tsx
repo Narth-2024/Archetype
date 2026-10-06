@@ -47,7 +47,7 @@ export default function RegisterPage() {
     <main className="flex min-h-screen flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-5 flex items-center justify-between">
-          <h1 className="title-gold text-2xl font-bold">Fichas RPG System</h1>
+          <h1 className="title-gold text-2xl font-bold">Archetype</h1>
           <ThemeToggle />
         </div>
         <Card title="Criar conta" accent="emerald">

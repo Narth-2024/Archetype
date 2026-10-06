@@ -15,7 +15,7 @@ export default async function DashboardPage() {
     <main className="mx-auto w-full max-w-5xl px-6 py-12">
       <header className="mb-8 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="title-gold text-3xl font-bold">Fichas RPG System</h1>
+          <h1 className="title-gold text-3xl font-bold">Archetype</h1>
           <p className="mt-1 text-zinc-400">
             Crie e organize fichas de D&amp;D 5e com cálculos automáticos.
           </p>
