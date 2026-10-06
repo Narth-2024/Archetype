@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useWizard } from "./context";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LangSelect } from "@/components/LangSelect";
 import { useT, useFormat } from "@/lib/i18n/client";
 import { StepIdentity } from "./steps/StepIdentity";
 import { StepAbilities } from "./steps/StepAbilities";
@@ -75,6 +76,7 @@ export function CharacterWizard() {
           {!error && !saving && savedAt && (
             <span className="fade-in">✓ {t("wizard.saved")}</span>
           )}
+          <LangSelect />
           <ThemeToggle />
         </div>
       </header>

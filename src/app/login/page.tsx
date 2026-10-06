@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Card, Field, TextInput } from "@/components/ui";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LangSelect } from "@/components/LangSelect";
 import { useT } from "@/lib/i18n/client";
 
 export default function LoginPage() {
@@ -47,7 +48,10 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-5 flex items-center justify-between">
           <h1 className="title-gold text-2xl font-bold">{t("app.name")}</h1>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <LangSelect />
+            <ThemeToggle />
+          </div>
         </div>
         <Card title={t("pages.auth.signIn")} accent="amber">
           <form onSubmit={submit} className="flex flex-col gap-3">

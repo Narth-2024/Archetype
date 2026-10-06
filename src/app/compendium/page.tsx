@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Badge, Card, type CardAccent } from "@/components/ui";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LangSelect } from "@/components/LangSelect";
 import { getI18n } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -61,6 +62,7 @@ export default async function CompendiumPage() {
           >
             {t("pages.nav.characters")}
           </Link>
+          <LangSelect />
           <ThemeToggle />
         </div>
       </header>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CharacterList } from "@/components/CharacterList";
 import { LogoutButton } from "@/components/LogoutButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LangSelect } from "@/components/LangSelect";
 import { requireUser } from "@/lib/auth";
 import { listCharacters } from "@/lib/characters";
 import { getI18n } from "@/lib/i18n/server";
@@ -31,6 +32,7 @@ export default async function DashboardPage() {
           </Link>
           <span className="text-sm text-zinc-500">@{user.username}</span>
           <LogoutButton />
+          <LangSelect />
           <ThemeToggle />
         </div>
       </header>

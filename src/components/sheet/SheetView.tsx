@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge, Card } from "@/components/ui";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LangSelect } from "@/components/LangSelect";
 import { UnitsSelect } from "@/components/UnitsSelect";
 import { PhotoAvatar } from "@/components/sheet/PhotoAvatar";
 import { LoreBox } from "@/components/sheet/LoreBox";
@@ -118,6 +119,7 @@ export async function SheetView({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <LangSelect />
             <ThemeToggle />
             <UnitsSelect />
             <Link
