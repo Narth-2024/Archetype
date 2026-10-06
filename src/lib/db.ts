@@ -8,6 +8,9 @@ const localPath = path.resolve(
   process.cwd(),
   process.env.DATABASE_PATH ?? "data/dev.db",
 );
+if (!remoteUrl) {
+  fs.mkdirSync(path.dirname(localPath), { recursive: true });
+}
 const url = remoteUrl ?? `file:${localPath}`;
 const isFile = !remoteUrl;
 
@@ -23,7 +26,6 @@ let ready: Promise<void> | undefined;
 
 async function initialize(): Promise<void> {
   if (isFile) {
-    fs.mkdirSync(path.dirname(localPath), { recursive: true });
     await client.execute("PRAGMA busy_timeout = 5000");
     await client.execute("PRAGMA journal_mode = WAL");
     await client.execute("PRAGMA foreign_keys = ON");
