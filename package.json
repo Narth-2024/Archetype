@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "test": "tsc --rootDir src --outDir .test-build --module commonjs --target es2022 --moduleResolution node --esModuleInterop --skipLibCheck src/domain/units.ts src/domain/optimize.ts src/domain/calc.ts src/domain/migrate.ts src/domain/create.ts && node tests/domain.test.cjs",
     "db:migrate": "node scripts/migrate-to-turso.mjs"
   },
   "dependencies": {

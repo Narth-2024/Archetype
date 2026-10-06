@@ -3,6 +3,7 @@
   <img src="https://img.shields.io/badge/React-19-61dafb?style=flat&logo=react&logoColor=black" alt="React" />
   <img src="https://img.shields.io/badge/TypeScript-5-3178c6?style=flat&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-4-38bdf8?style=flat&logo=tailwindcss&logoColor=black" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat" alt="License: MIT" />
 </p>
 
 # Archetype
@@ -96,6 +97,7 @@ npm run dev        # http://localhost:3000 — schema is created automatically
 | `npm run start`      | Serve the production build           |
 | `npm run lint`       | ESLint                               |
 | `npm run typecheck`  | `tsc --noEmit`                       |
+| `npm test`           | Rules-engine test suite (54 checks)  |
 | `npm run db:migrate` | Migrate local data to Turso          |
 
 ## Project structure
@@ -205,6 +207,19 @@ Without the Turso variables (local development), the app uses `data/dev.db`.
 - Turn-tracked combat actions and conditions on the sheet
 - Character import/export (JSON)
 - Search and filters in the compendium
+
+## Contributing
+
+Bug reports, fixes, new SRD content, and translations are welcome — see
+[CONTRIBUTING.md](CONTRIBUTING.md) for the setup, the checks that must pass
+(`typecheck`, `lint`, `build`, `test`), and the translation guidelines.
+
+## License
+
+The source code is released under the [MIT License](LICENSE).
+
+Game content derived from the D&D 5e SRD remains subject to Wizards of the Coast's SRD
+terms — see below.
 
 ## Notes
 
