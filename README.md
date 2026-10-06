@@ -1,7 +1,7 @@
-# Fichas RPG System
+# Archetype
 
-Aplicação web para **criar e organizar fichas de personagens de D&D 5e**, pensada
-para jogadores iniciantes: um construtor guiado passo a passo com cálculos
+**Archetype** é um sistema para **criar e organizar fichas de personagens de D&D 5e**,
+pensado para jogadores iniciantes: um construtor guiado passo a passo com cálculos
 automáticos e uma ficha digital pronta para a sessão.
 
 ## Stack
