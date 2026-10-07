@@ -7,8 +7,11 @@ import type { AbilityKey } from "@/domain/types";
 import {
   abilityScore,
   classEntries,
+  darkvision,
   hasSpellcasting,
+  raceAbility,
   resolveProficiencies,
+  speed,
 } from "@/domain/calc";
 
 function TraitList({
@@ -103,7 +106,8 @@ export function StepFeatures() {
 
   const bonusLines: { label: string; detail: string }[] = [];
   if (race) {
-    const fixed = Object.entries(race.abilityBonus.fixed);
+    const ability = raceAbility(doc, d);
+    const fixed = Object.entries(ability.fixed);
     if (fixed.length > 0) {
       bonusLines.push({
         label: t("wizard.features.raceAbilities", { name: race.name }),
@@ -112,13 +116,13 @@ export function StepFeatures() {
           .join(", "),
       });
     }
-    if (race.abilityBonus.flexible) {
+    if (ability.flexible) {
       bonusLines.push({
         label: t("wizard.features.raceFlexible", { name: race.name }),
         detail:
           doc.identity.raceBonusChoices.length > 0
             ? t("wizard.features.flexibleDetail", {
-                amount: race.abilityBonus.flexible.amount,
+                amount: ability.flexible.amount,
                 names: doc.identity.raceBonusChoices
                   .map((k: AbilityKey) => d.ABILITY_NAMES[k] ?? k)
                   .join(", "),
@@ -128,7 +132,7 @@ export function StepFeatures() {
     }
     bonusLines.push({
       label: t("wizard.features.raceSpeed", { name: race.name }),
-      detail: speedDetail(race.speed, race.darkvision),
+      detail: speedDetail(speed(doc, d), darkvision(doc, d)),
     });
   }
 
@@ -164,7 +168,7 @@ export function StepFeatures() {
         title={t("wizard.features.raceTraits", {
           name: race?.name ?? t("wizard.features.raceFallback"),
         })}
-        traits={race?.traits ?? []}
+        traits={subrace?.replacesTraits ? [] : (race?.traits ?? [])}
         badge={t("wizard.badge.race")}
       />
       {subrace && (

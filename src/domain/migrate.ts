@@ -26,6 +26,10 @@ export function migrateDoc(raw: unknown): CharacterDoc {
   identity.subraceId ??= "";
   identity.classes ??= [];
   identity.raceBonusChoices ??= [];
+  if (identity.raceId === "humano_variante") {
+    identity.raceId = "humano";
+    identity.subraceId = "humano_variante";
+  }
   identity.classes = identity.classes.filter((c) => c.classId && c.level > 0);
   doc.feats ??= [];
   doc.photo ??= "";

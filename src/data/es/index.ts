@@ -2,6 +2,8 @@ export { ABILITY_NAMES, ABILITY_ABBR, LABELS } from "./labels";
 export { SKILLS, getSkill } from "./skills";
 export { RACES, getRace, SUBRACES, getSubrace, subracesForRace } from "./races";
 export type { RaceDef, TraitDef, SubraceDef } from "./races";
+export { SOURCES, getSource, sourcesWithRaces, racesForSource } from "./sources";
+export type { SourceDef } from "./sources";
 export { SUBCLASSES, getSubclass, subclassesForClass } from "./subclasses";
 export type { SubclassDef, SubclassFeature } from "./subclasses";
 export {

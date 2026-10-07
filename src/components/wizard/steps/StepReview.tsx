@@ -57,6 +57,9 @@ export function StepReview() {
             {doc.identity.name || t("wizard.review.noName")}
           </span>
           <Badge color="amber">{race?.name ?? "?"}</Badge>
+          {d.getSubrace(doc.identity.subraceId) && (
+            <Badge color="amber">{d.getSubrace(doc.identity.subraceId)!.name}</Badge>
+          )}
           {entries.length > 0 ? (
             entries.map((e) => (
               <Badge key={e.classId} color="blue">

@@ -46,18 +46,30 @@ export function primaryClass(c: CharacterDoc, d: DataBundle = PT_BUNDLE) {
   return d.getClass(best.classId);
 }
 
-export function racialBonus(c: CharacterDoc, key: AbilityKey, d: DataBundle = PT_BUNDLE): number {
+export function raceAbility(
+  c: CharacterDoc,
+  d: DataBundle = PT_BUNDLE,
+): { fixed: Partial<Record<AbilityKey, number>>; flexible?: { count: number; amount: number } } {
   const race = d.getRace(c.identity.raceId);
-  if (!race) return 0;
-  let bonus = race.abilityBonus.fixed[key] ?? 0;
-  if (
-    race.abilityBonus.flexible &&
-    c.identity.raceBonusChoices.includes(key)
-  ) {
-    bonus += race.abilityBonus.flexible.amount;
-  }
   const subrace = d.getSubrace(c.identity.subraceId);
-  bonus += subrace?.abilityBonus?.[key] ?? 0;
+  if (!race) return { fixed: {} };
+  if (subrace?.replacesAbilityBonus) {
+    return { fixed: { ...subrace.abilityBonus }, flexible: subrace.flexible };
+  }
+  const fixed: Partial<Record<AbilityKey, number>> = { ...race.abilityBonus.fixed };
+  for (const key of ABILITY_KEYS) {
+    const bonus = subrace?.abilityBonus?.[key] ?? 0;
+    if (bonus) fixed[key] = (fixed[key] ?? 0) + bonus;
+  }
+  return { fixed, flexible: race.abilityBonus.flexible };
+}
+
+export function racialBonus(c: CharacterDoc, key: AbilityKey, d: DataBundle = PT_BUNDLE): number {
+  const { fixed, flexible } = raceAbility(c, d);
+  let bonus = fixed[key] ?? 0;
+  if (flexible && c.identity.raceBonusChoices.includes(key)) {
+    bonus += flexible.amount;
+  }
   return bonus;
 }
 
@@ -429,12 +441,16 @@ export function raceSkillPool(c: CharacterDoc, d: DataBundle = PT_BUNDLE): {
   count: number;
 } {
   const race = d.getRace(c.identity.raceId);
-  if (!race?.skillChoices) return { options: [], count: 0 };
-  return {
-    options:
-      race.skillChoices.options === "any" ? [...SKILL_KEYS] : race.skillChoices.options,
-    count: race.skillChoices.count,
-  };
+  const subrace = d.getSubrace(c.identity.subraceId);
+  const pools = [race?.skillChoices, subrace?.skillChoices].filter(
+    (p): p is NonNullable<typeof p> => Boolean(p),
+  );
+  if (pools.length === 0) return { options: [], count: 0 };
+  const count = pools.reduce((a, p) => a + p.count, 0);
+  if (pools.some((p) => p.options === "any")) {
+    return { options: [...SKILL_KEYS], count };
+  }
+  return { options: [...new Set(pools.flatMap((p) => p.options as SkillId[]))], count };
 }
 
 export function resolveProficiencies(c: CharacterDoc, d: DataBundle = PT_BUNDLE): {
@@ -470,6 +486,7 @@ export function resolveProficiencies(c: CharacterDoc, d: DataBundle = PT_BUNDLE)
     languages: union([
       c.proficiencies.languages,
       race?.languages.filter((l) => !l.includes(d.LABELS.choiceFragment)) ?? [],
+      subrace?.languages?.filter((l) => !l.includes(d.LABELS.choiceFragment)) ?? [],
     ]),
   };
 }

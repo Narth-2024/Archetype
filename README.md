@@ -20,13 +20,13 @@ your sheets ready for the table — in **English, Spanish, and Portuguese**.
   choice means instead of sending you back to the rulebook.
 - **Every value derived, nothing hard-coded** — ability modifiers, proficiency bonus, AC, HP,
   saves, attacks, spell slots, and spellcasting DC are computed at render time by a pure,
-  tested rules engine (`src/domain/calc.ts`, 54 unit checks). Change a level, race, or score and
+  tested rules engine (`src/domain/calc.ts`, 75 unit checks). Change a level, race, or score and
   everything recalculates instantly.
 - **Transparent formulas** — each derived value shows its own breakdown
   (e.g. `AC = 16 chain mail + 2 shield`).
-- **SRD content included** — 12 classes, 39 subclasses, 10 races with 8 subraces, 38 feats,
-  13 backgrounds, 30 weapons, 13 armors, and 214 spells (levels 0–9) with a public spell
-  compendium grouped by school.
+- **SRD content included** — 12 classes, 39 subclasses, 62 races with 49 subraces (filterable
+  by source book), 38 feats, 13 backgrounds, 30 weapons, 13 armors, and 214 spells (levels 0–9)
+  with a public spell compendium grouped by school.
 
 ## Features
 
@@ -42,9 +42,11 @@ your sheets ready for the table — in **English, Spanish, and Portuguese**.
   as warnings, never blockers.
 - **Budget counters** for saves, skills, languages, and tools per source (class / background /
   race) — you may exceed them, but the counter turns red.
-- **Subraces, subclasses, and feats** — subclass features unlock by level, and feat
-  prerequisites (ability, proficiency, spellcasting) are validated with clear warnings while
-  ability-score and HP bonuses feed the calculations.
+- **Subraces, subclasses, and feats** — pick the race's **source book** to filter races and
+  subraces (MPMM, FToD, PHB, Plane Shift, …); subraces can replace the racial ability bonus
+  and traits (variant human, duergar, FToD dragonborn…), subclass features unlock by level,
+  and feat prerequisites (ability, proficiency, spellcasting) are validated with clear warnings
+  while ability-score and HP bonuses feed the calculations.
 - **214 SRD spells** with preparation, known spells, and combined spell slots.
 
 ### Digital sheet

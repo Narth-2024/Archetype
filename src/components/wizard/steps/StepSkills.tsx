@@ -125,7 +125,10 @@ export function StepSkills() {
 
   const languageChoices =
     (bg?.languageChoices?.count ?? 0) +
-    (race?.languages.filter((l) => l.includes(d.LABELS.choiceFragment)).length ?? 0);
+    (race?.languages.filter((l) => l.includes(d.LABELS.choiceFragment)).length ?? 0) +
+    (d.getSubrace(doc.identity.subraceId)?.languages?.filter((l) =>
+      l.includes(d.LABELS.choiceFragment),
+    ).length ?? 0);
   const languagesChosen = doc.proficiencies.languages.length;
   const toolChoices =
     (bg?.toolChoices?.count ?? 0) +

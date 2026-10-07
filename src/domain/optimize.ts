@@ -2,7 +2,7 @@ import type { AbilityKey, CharacterDoc } from "./types";
 import { ABILITY_KEYS } from "./types";
 import { PT_BUNDLE } from "../data";
 import type { DataBundle } from "../data";
-import { abilityMod, classEntries } from "./calc";
+import { abilityMod, classEntries, raceAbility } from "./calc";
 
 function fill(template: string, args: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (m, k: string) =>
@@ -161,14 +161,7 @@ function chooseFlex(
 }
 
 export function suggestAbilities(c: CharacterDoc, d: DataBundle = PT_BUNDLE): Suggestion {
-  const race = d.getRace(c.identity.raceId);
-  const subrace = d.getSubrace(c.identity.subraceId);
-  const fixed: Partial<Record<AbilityKey, number>> = { ...(race?.abilityBonus.fixed ?? {}) };
-  for (const key of ABILITY_KEYS) {
-    const bonus = subrace?.abilityBonus?.[key] ?? 0;
-    if (bonus) fixed[key] = (fixed[key] ?? 0) + bonus;
-  }
-  const flexible = race?.abilityBonus.flexible;
+  const { fixed, flexible } = raceAbility(c, d);
   const weights = weightsFor(c, d);
 
   const mode = c.identity.abilityMode;

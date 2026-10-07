@@ -5,7 +5,7 @@ import { useWizard } from "../context";
 import { Card, NumberInput, Toggle } from "@/components/ui";
 import { useT, useData, useFormat } from "@/lib/i18n/client";
 import { ABILITY_KEYS, type AbilityKey } from "@/domain/types";
-import { abilityMod, abilityScore, racialBonus } from "@/domain/calc";
+import { abilityMod, abilityScore, racialBonus, raceAbility } from "@/domain/calc";
 import {
   POINT_BUY_TOTAL,
   STANDARD_ARRAY,
@@ -33,8 +33,7 @@ export function StepAbilities() {
   const d = useData();
   const fmt = useFormat();
   const [note, setNote] = useState<string | null>(null);
-  const race = d.getRace(doc.identity.raceId);
-  const flexible = race?.abilityBonus.flexible;
+  const flexible = raceAbility(doc, d).flexible;
   const choices = doc.identity.raceBonusChoices;
   const mode = doc.identity.abilityMode;
   const spent = pointBuySpent(doc.abilities);

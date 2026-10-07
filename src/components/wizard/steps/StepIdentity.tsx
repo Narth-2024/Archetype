@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { useWizard } from "../context";
 import { Card, Field, NumberInput, Select, TextInput } from "@/components/ui";
 import { useT, useData, useFormat } from "@/lib/i18n/client";
 import type { CharacterDoc } from "@/domain/types";
-import { abilityScore, classEntries } from "@/domain/calc";
+import { abilityScore, classEntries, raceAbility, raceSkillPool } from "@/domain/calc";
 import type { DataBundle } from "@/data";
 
 export const ALIGNMENTS: { value: string; key: string }[] = [
@@ -48,11 +49,24 @@ export function StepIdentity() {
   const d = useData();
   const fmt = useFormat();
   const id = doc.identity;
+  const [sourceId, setSourceId] = useState("");
   const race = d.getRace(id.raceId);
-  const availableSubraces = d.subracesForRace(id.raceId);
+  const sourceRaces = d.racesForSource(sourceId);
+  const availableSubraces = d
+    .subracesForRace(id.raceId)
+    .filter((s) => !sourceId || s.source === sourceId);
   const subrace = d.getSubrace(id.subraceId);
   const bg = d.getBackground(id.backgroundId);
   const total = classEntries(doc).reduce((a, e) => a + e.level, 0);
+  const ability = raceAbility(doc, d);
+  const skillPool = raceSkillPool(doc, d);
+
+  const raceOptions =
+    race && !sourceRaces.some((r) => r.id === race.id) ? [race, ...sourceRaces] : sourceRaces;
+  const subraceOptions =
+    subrace && !availableSubraces.some((s) => s.id === subrace.id)
+      ? [subrace, ...availableSubraces]
+      : availableSubraces;
 
   function speedHint(speed: number, darkvision?: number | null) {
     const base = t("wizard.identity.speed", { value: fmt.distance(speed) });
@@ -62,13 +76,11 @@ export function StepIdentity() {
 
   function changeRace(raceId: string) {
     const next = d.getRace(raceId);
-    const subs = d.subracesForRace(raceId);
     update((doc) => {
       doc.identity.raceId = raceId;
       doc.identity.subraceId = "";
       doc.identity.raceBonusChoices = [];
       for (const s of next?.proficiencies.skills ?? []) doc.skills[s] = true;
-      if (subs.length === 1) doc.identity.subraceId = subs[0].id;
     });
   }
 
@@ -76,6 +88,7 @@ export function StepIdentity() {
     const sub = d.getSubrace(subraceId);
     update((doc) => {
       doc.identity.subraceId = subraceId;
+      doc.identity.raceBonusChoices = [];
       for (const s of sub?.proficiencies?.skills ?? []) doc.skills[s] = true;
     });
   }
@@ -163,13 +176,24 @@ export function StepIdentity() {
         />
       </Field>
 
+      <Field label={t("wizard.identity.source")}>
+        <Select value={sourceId} onChange={(e) => setSourceId(e.target.value)}>
+          <option value="">{t("wizard.identity.sourceAll")}</option>
+          {d.sourcesWithRaces().map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </Select>
+      </Field>
+
       <Field
         label={t("wizard.identity.race")}
         hint={race ? speedHint(race.speed, race.darkvision) : undefined}
       >
         <Select value={id.raceId} onChange={(e) => changeRace(e.target.value)}>
           <option value="">{t("wizard.select")}</option>
-          {d.RACES.map((r) => (
+          {raceOptions.map((r) => (
             <option key={r.id} value={r.id}>
               {r.name}
             </option>
@@ -189,11 +213,11 @@ export function StepIdentity() {
       >
         <Select value={id.subraceId} onChange={(e) => changeSubrace(e.target.value)}>
           <option value="">
-            {availableSubraces.length > 0
+            {subraceOptions.length > 0
               ? t("wizard.select")
               : t("wizard.noneAvailable")}
           </option>
-          {availableSubraces.map((s) => (
+          {subraceOptions.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name}
             </option>
@@ -378,30 +402,31 @@ export function StepIdentity() {
       {race && (
         <Card title={t("wizard.identity.racialBonusTitle")} className="sm:col-span-2">
           <div className="flex flex-wrap gap-2 text-sm text-zinc-300">
-            {Object.entries(race.abilityBonus.fixed).map(([k, v]) => (
+            {Object.entries(ability.fixed).map(([k, v]) => (
               <span key={k} className="rounded border border-zinc-700 px-2 py-1">
                 +{v} {d.ABILITY_ABBR[k] ?? k.toUpperCase()}
               </span>
             ))}
-            {race.abilityBonus.flexible && (
+            {ability.flexible && (
               <span className="rounded border border-amber-700 px-2 py-1 text-amber-300">
                 {t("wizard.identity.flexibleBonus", {
-                  amount: race.abilityBonus.flexible.amount,
-                  count: race.abilityBonus.flexible.count,
+                  amount: ability.flexible.amount,
+                  count: ability.flexible.count,
                 })}
               </span>
             )}
-            {race.skillChoices && (
+            {skillPool.count > 0 && (
               <span className="rounded border border-amber-700 px-2 py-1 text-amber-300">
                 {t(
-                  race.skillChoices.count > 1
+                  skillPool.count > 1
                     ? "wizard.identity.skillChoiceMany"
                     : "wizard.identity.skillChoiceOne",
-                  { count: race.skillChoices.count },
+                  { count: skillPool.count },
                 )}
               </span>
             )}
             {subrace &&
+              !subrace.replacesAbilityBonus &&
               Object.entries(subrace.abilityBonus ?? {}).map(([k, v]) => (
                 <span
                   key={`sub-${k}`}

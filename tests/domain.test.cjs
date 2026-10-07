@@ -126,7 +126,8 @@ check("sugestão array usa os valores do array", JSON.stringify(vals) === JSON.s
 
 // --- humano variante flexível ---
 const human = newCharacterDoc();
-human.identity.raceId = "humano_variante";
+human.identity.raceId = "humano";
+human.identity.subraceId = "humano_variante";
 human.identity.classes = [{ classId: "bardo", level: 3 }];
 human.identity.abilityMode = "pontos";
 const s4 = suggestAbilities(human);
@@ -162,6 +163,58 @@ check("Durável: +1 CON", calc.abilityScore(dwarf, "con") === 13, calc.abilitySc
 const bd = calc.allAbilitiesWithBreakdown(dwarf).find((a) => a.key === "con");
 check("breakdown tem parte feats", bd.feats === 1 && bd.race === 2 && bd.total === 13, bd);
 check("darkvision do anão", calc.darkvision(dwarf) === 60, calc.darkvision(dwarf));
+
+// --- v4: sub-raças com replacesAbilityBonus / replacesTraits ---
+const zariel = newCharacterDoc();
+zariel.identity.raceId = "tiefling";
+zariel.identity.subraceId = "tiefling_zariel";
+zariel.abilities = { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+check("zariel: +2 CAR", calc.abilityScore(zariel, "cha") === 12, calc.abilityScore(zariel, "cha"));
+check("zariel: +1 FOR", calc.abilityScore(zariel, "str") === 11, calc.abilityScore(zariel, "str"));
+check("zariel substitui INT do tiefling base", calc.abilityScore(zariel, "int") === 10, calc.abilityScore(zariel, "int"));
+check("zariel: replacesAbilityBonus e mantém traits da raça", getSubrace("tiefling_zariel")?.replacesAbilityBonus === true && !getSubrace("tiefling_zariel")?.replacesTraits, { ab: getSubrace("tiefling_zariel")?.replacesAbilityBonus, tr: getSubrace("tiefling_zariel")?.replacesTraits });
+check("draconato de gema: replacesTraits", getSubrace("draconato_gema")?.replacesTraits === true, getSubrace("draconato_gema")?.replacesTraits);
+
+const eladrin = newCharacterDoc();
+eladrin.identity.raceId = "elfo";
+eladrin.identity.subraceId = "elfo_eladrin";
+check("eladrin substitui o +2 DES fixo do elfo por ASI flexível", calc.racialBonus(eladrin, "dex") === 0, calc.racialBonus(eladrin, "dex"));
+check("eladrin: 3 escolhas flexíveis", suggestAbilities(eladrin).raceChoices.length === 3, suggestAbilities(eladrin).raceChoices);
+eladrin.identity.raceBonusChoices = ["dex", "con", "cha"];
+check("eladrin: +1 em cada escolha flexível", calc.racialBonus(eladrin, "dex") === 1 && calc.racialBonus(eladrin, "con") === 1, { dex: calc.racialBonus(eladrin, "dex"), con: calc.racialBonus(eladrin, "con") });
+
+const duergar = newCharacterDoc();
+duergar.identity.raceId = "anao";
+duergar.identity.subraceId = "anao_duergar";
+check("duergar: deslocamento 30", calc.speed(duergar) === 30, calc.speed(duergar));
+check("duergar: darkvision 120", calc.darkvision(duergar) === 120, calc.darkvision(duergar));
+const duergarProfs = calc.resolveProficiencies(duergar);
+check("duergar: idiomas da sub-raça entram (Comum + Anão + escolha)", duergarProfs.languages.includes("Comum") && duergarProfs.languages.includes("Anão"), duergarProfs.languages);
+
+const dragonborn = newCharacterDoc();
+dragonborn.identity.raceId = "draconato";
+dragonborn.identity.subraceId = "draconato_gema";
+check("draconato de gema: ASI flexível (sem FOR fixo do base)", calc.racialBonus(dragonborn, "str") === 0 && suggestAbilities(dragonborn).raceChoices.length === 3, { str: calc.racialBonus(dragonborn, "str"), flex: suggestAbilities(dragonborn).raceChoices });
+
+// --- cobertura das fontes ---
+const { RACES, SUBRACES, sourcesWithRaces, racesForSource } = require(path + "/data/index.js");
+check("62 raças", RACES.length === 62, RACES.length);
+check("49 sub-raças", SUBRACES.length === 49, SUBRACES.length);
+check("toda raça tem source", RACES.every((r) => typeof r.source === "string" && r.source.length > 0));
+check("toda sub-raça tem source", SUBRACES.every((s) => typeof s.source === "string" && s.source.length > 0));
+check("ids únicos de raça e sub-raça", new Set([...RACES.map((r) => r.id), ...SUBRACES.map((s) => s.id)]).size === RACES.length + SUBRACES.length);
+check("sub-raças apontam para raças existentes", SUBRACES.every((s) => RACES.some((r) => r.id === s.raceId)));
+check("fontes com raças ≥ 10", sourcesWithRaces().length >= 10, sourcesWithRaces().length);
+check("filtro phb retorna só raças PHB ou sub-raças PHB", racesForSource("phb").every((r) => r.source === "phb" || SUBRACES.some((s) => s.raceId === r.id && s.source === "phb")), racesForSource("phb").map((r) => r.id));
+
+// --- migração humano_variante ---
+const legacyHuman = migrateDoc({
+  identity: { raceId: "humano_variante", classes: [], subraceId: "", raceBonusChoices: [] },
+  abilities: { str: 8, dex: 15, con: 12, int: 13, wis: 10, cha: 14 },
+  saves: {}, skills: {}, proficiencies: { armors: [], weapons: [], tools: [], languages: [] },
+  inventory: [], attacks: [], spellcasting: { known: [], prepared: [], slotsUsed: {} },
+});
+check("migração humano_variante → humano + sub-raça", legacyHuman.identity.raceId === "humano" && legacyHuman.identity.subraceId === "humano_variante", legacyHuman.identity);
 
 const ref = parseFeatRef(buildFeatRef("atleta", "dex"));
 check("parse/build de ref", ref.featId === "atleta" && ref.ability === "dex", ref);
