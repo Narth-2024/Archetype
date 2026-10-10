@@ -234,8 +234,10 @@ check("pré-requisito de conjuração", castFeat ? featUnmetRequirements(castFea
 
 // --- v3: subclasse ---
 check("subclasse mestre_de_armas no nível 3", getSubclass("mestre_de_armas")?.level === 3, getSubclass("mestre_de_armas")?.level);
-check("8 escolas do mago", subclassesForClass("mago").length === 8, subclassesForClass("mago").length);
-check("guerreiro tem 3 subclasses", subclassesForClass("guerreiro").length === 3, subclassesForClass("guerreiro").length);
+check("13 escolas do mago", subclassesForClass("mago").length === 13, subclassesForClass("mago").length);
+check("guerreiro tem 10 subclasses", subclassesForClass("guerreiro").length === 10, subclassesForClass("guerreiro").length);
+check("artifice tem 4 subclasses", subclassesForClass("artifice").length === 4, subclassesForClass("artifice").length);
+check("cacador_de_sangue tem 4 subclasses", subclassesForClass("cacador_de_sangue").length === 4, subclassesForClass("cacador_de_sangue").length);
 
 // --- hasSpellcasting ---
 const plain = newCharacterDoc();
@@ -249,10 +251,44 @@ plain.identity.classes = [{ classId: "mago", level: 1 }];
 check("mago: conjuração", calc.hasSpellcasting(plain) === true, calc.hasSpellcasting(plain));
 
 // --- spells níveis 4-9 ---
-const { SPELLS } = require(path + "/data/index.js");
+const { SPELLS, CLASSES, SUBCLASSES, BACKGROUNDS, FEATS, SOURCES, getClass, classPrerequisite } = require(path + "/data/index.js");
 const high = SPELLS.filter((s) => s.level >= 4);
-check("150 magias de nível 4-9", high.length === 150, high.length);
-check("magias de nível 9 = 15", SPELLS.filter((s) => s.level === 9).length === 15, SPELLS.filter((s) => s.level === 9).length);
+check("237 magias de nível 4-9", high.length === 237, high.length);
+check("magias de nível 9 = 22", SPELLS.filter((s) => s.level === 9).length === 22, SPELLS.filter((s) => s.level === 9).length);
+
+// --- cobertura do pacote de conteúdo ---
+check("14 classes", CLASSES.length === 14, CLASSES.length);
+check("127 subclasses", SUBCLASSES.length === 127, SUBCLASSES.length);
+check("524 magias", SPELLS.length === 524, SPELLS.length);
+check("93 backgrounds", BACKGROUNDS.length === 93, BACKGROUNDS.length);
+check("116 feats", FEATS.length === 116, FEATS.length);
+check("artifice e cacador_de_sangue existem", !!getClass("artifice") && !!getClass("cacador_de_sangue"));
+check("toda classe tem source", CLASSES.every((c) => typeof c.source === "string" && c.source.length > 0));
+check("toda subclass tem source", SUBCLASSES.every((c) => typeof c.source === "string" && c.source.length > 0));
+check("toda magia tem source", SPELLS.every((c) => typeof c.source === "string" && c.source.length > 0));
+check("todo background tem source", BACKGROUNDS.every((c) => typeof c.source === "string" && c.source.length > 0));
+check("todo feat tem source", FEATS.every((c) => typeof c.source === "string" && c.source.length > 0));
+const srcIds = new Set(SOURCES.map((s) => s.id));
+check("sources conhecidas (classes/subs/magias/bg/feats)",
+  [...CLASSES, ...SUBCLASSES, ...SPELLS, ...BACKGROUNDS, ...FEATS].every((e) => srcIds.has(e.source)),
+  [...CLASSES, ...SUBCLASSES, ...SPELLS, ...BACKGROUNDS, ...FEATS].filter((e) => !srcIds.has(e.source)).map((e) => e.source));
+check("ids únicos por coleção",
+  [CLASSES, SUBCLASSES, SPELLS, BACKGROUNDS, FEATS].every((arr) => new Set(arr.map((x) => x.id)).size === arr.length));
+check("features de classe com nível 1-20",
+  CLASSES.every((c) => c.features.length > 0 && c.features.every((f) => f.level >= 1 && f.level <= 20)));
+check("todas as classes têm feature de nível 1", CLASSES.every((c) => c.features.some((f) => f.level === 1)),
+  CLASSES.filter((c) => !c.features.some((f) => f.level === 1)).map((c) => c.id));
+check("subclasses apontam para classes existentes",
+  SUBCLASSES.every((s) => CLASSES.some((c) => c.id === s.classId)));
+check("magias apontam para classes existentes",
+  SPELLS.every((s) => s.classes.every((id) => CLASSES.some((c) => c.id === id))),
+  SPELLS.filter((s) => !s.classes.every((id) => CLASSES.some((c) => c.id === id))).map((s) => s.id));
+const preA = classPrerequisite("artifice");
+const preB = classPrerequisite("cacador_de_sangue");
+check("pré-requisito multiclasse artifice (INT 13)", !!preA && JSON.stringify(preA.anyOf) === JSON.stringify(["int"]), preA);
+check("pré-requisito multiclasse cacador (INT 13 + FOR/DES 13)",
+  !!preB && JSON.stringify(preB.allOf) === JSON.stringify(["int"]) &&
+  JSON.stringify(preB.anyOf) === JSON.stringify(["str", "dex"]), preB);
 
 console.log(failures === 0 ? "\nTODOS OS TESTES PASSARAM" : `\n${failures} FALHAS`);
 process.exit(failures === 0 ? 0 : 1);

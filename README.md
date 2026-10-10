@@ -24,9 +24,9 @@ your sheets ready for the table — in **English, Spanish, and Portuguese**.
   everything recalculates instantly.
 - **Transparent formulas** — each derived value shows its own breakdown
   (e.g. `AC = 16 chain mail + 2 shield`).
-- **SRD content included** — 12 classes, 39 subclasses, 62 races with 49 subraces (filterable
-  by source book), 38 feats, 13 backgrounds, 30 weapons, 13 armors, and 214 spells (levels 0–9)
-  with a public spell compendium grouped by school.
+- **SRD content included** — 14 classes (including Artificer and Blood Hunter), 127 subclasses,
+  62 races with 49 subraces (filterable by source book), 116 feats, 93 backgrounds, 30 weapons,
+  13 armors, and 524 spells (levels 0–9) with a public spell compendium grouped by school.
 
 ## Features
 

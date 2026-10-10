@@ -460,7 +460,8 @@ function MulticlassWarnings({ doc }: { doc: CharacterDoc }) {
         if (abilityScore(doc, key, d) < 13)
           unmet.push(d.ABILITY_ABBR[key] ?? key.toUpperCase());
       }
-    } else if (prereq.anyOf) {
+    }
+    if (prereq.anyOf) {
       if (!prereq.anyOf.some((key) => abilityScore(doc, key, d) >= 13)) {
         unmet.push(
           prereq.anyOf

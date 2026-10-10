@@ -182,7 +182,7 @@ export function StepFeatures() {
         <TraitList
           key={cls.id}
           title={t("wizard.features.classResources", { name: cls.name, level })}
-          traits={cls.features}
+          traits={cls.features.filter((f) => f.level <= level)}
           badge={t("wizard.badge.class")}
         />
       ))}

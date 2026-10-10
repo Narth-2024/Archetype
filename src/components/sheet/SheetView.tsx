@@ -523,12 +523,14 @@ export async function SheetView({
                 <div key={cls.id}>
                   <p className="text-xs uppercase text-zinc-500">{cls.name}</p>
                   <ul className="mt-1 flex flex-col gap-1 text-sm text-zinc-300">
-                    {cls.features.map((trait) => (
-                      <li key={trait.name}>
-                        <strong className="text-zinc-200">{trait.name}:</strong>{" "}
-                        {fmt.distanceText(trait.description)}
-                      </li>
-                    ))}
+                    {cls.features
+                      .filter((trait) => trait.level <= level)
+                      .map((trait) => (
+                        <li key={`${trait.level}-${trait.name}`}>
+                          <strong className="text-zinc-200">{trait.name}:</strong>{" "}
+                          {fmt.distanceText(trait.description)}
+                        </li>
+                      ))}
                     {subclass &&
                       (subclassFeatures.length > 0 ? (
                         subclassFeatures.map((trait) => (
