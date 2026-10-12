@@ -41,6 +41,7 @@ export const pages: Dict = {
     "pages.list.countOne": "{count} personagem",
     "pages.list.countMany": "{count} personagens",
     "pages.list.deleteFailed": "Falha ao excluir. Tente de novo.",
+    "pages.list.deleteConfirm": "Excluir \"{name}\"? Esta ação não pode ser desfeita.",
     "pages.list.createFailed": "Falha ao criar personagem. Tente novamente.",
     "pages.list.emptyTitle": "Nenhum personagem ainda.",
     "pages.list.emptyHint":
@@ -98,6 +99,7 @@ export const pages: Dict = {
     "pages.list.countOne": "{count} character",
     "pages.list.countMany": "{count} characters",
     "pages.list.deleteFailed": "Failed to delete. Try again.",
+    "pages.list.deleteConfirm": "Delete \"{name}\"? This cannot be undone.",
     "pages.list.createFailed": "Failed to create character. Try again.",
     "pages.list.emptyTitle": "No characters yet.",
     "pages.list.emptyHint":
@@ -155,6 +157,7 @@ export const pages: Dict = {
     "pages.list.countOne": "{count} personaje",
     "pages.list.countMany": "{count} personajes",
     "pages.list.deleteFailed": "Error al eliminar. Inténtalo de nuevo.",
+    "pages.list.deleteConfirm": "¿Eliminar \"{name}\"? Esta acción no se puede deshacer.",
     "pages.list.createFailed": "Error al crear el personaje. Inténtalo de nuevo.",
     "pages.list.emptyTitle": "Aún no hay personajes.",
     "pages.list.emptyHint":

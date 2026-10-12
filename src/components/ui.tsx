@@ -43,11 +43,11 @@ export function Card({
       } ${className}`}
     >
       {title && (
-        <h3
+        <h2
           className={`mb-3 text-sm font-semibold uppercase tracking-wide ${a ? a.title : "text-zinc-400"}`}
         >
           {title}
-        </h3>
+        </h2>
       )}
       {children}
     </section>
@@ -241,6 +241,9 @@ export function Toggle({
   return (
     <button
       type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-sm transition ${
@@ -305,6 +308,103 @@ export function Formula({
           .join(" ")
           .replace(/^\+ /, "")}
       </span>
+    </div>
+  );
+}
+
+export function Toast({
+  message,
+  tone = "error",
+  onDismiss,
+}: {
+  message: string;
+  tone?: "error" | "success" | "info";
+  onDismiss?: () => void;
+}) {
+  const tones = {
+    error: "border-red-800 bg-red-950/90 text-red-300",
+    success: "border-emerald-800 bg-emerald-950/90 text-emerald-300",
+    info: "border-zinc-700 bg-zinc-900/90 text-zinc-200",
+  };
+  return (
+    <div
+      role={tone === "error" ? "alert" : "status"}
+      aria-live={tone === "error" ? "assertive" : "polite"}
+      className={`fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-md border px-4 py-2 text-sm shadow-lg ${tones[tone]}`}
+    >
+      <span>{message}</span>
+      {onDismiss && (
+        <button
+          type="button"
+          onClick={onDismiss}
+          aria-label="Fechar"
+          className="ml-2 rounded p-0.5 text-current/70 transition hover:text-current"
+        >
+          ✕
+        </button>
+      )}
+    </div>
+  );
+}
+
+export function ConfirmDialog({
+  open,
+  title,
+  message,
+  confirmLabel,
+  cancelLabel,
+  busy,
+  onConfirm,
+  onCancel,
+}: {
+  open: boolean;
+  title: string;
+  message: string;
+  confirmLabel: string;
+  cancelLabel: string;
+  busy?: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  if (!open) return null;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      onClick={busy ? undefined : onCancel}
+    >
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="confirm-title"
+        aria-describedby="confirm-message"
+        className="w-full max-w-sm rounded-lg border border-zinc-700 bg-zinc-900 p-5 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 id="confirm-title" className="text-base font-semibold text-zinc-100">
+          {title}
+        </h2>
+        <p id="confirm-message" className="mt-2 text-sm text-zinc-400">
+          {message}
+        </p>
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={busy}
+            className="rounded-md border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 transition hover:border-zinc-500 disabled:opacity-50"
+          >
+            {cancelLabel}
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={busy}
+            className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-red-500 disabled:opacity-50"
+          >
+            {busy ? "…" : confirmLabel}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

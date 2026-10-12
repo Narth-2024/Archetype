@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import { Badge, TextInput } from "@/components/ui";
+import { useEffect, useMemo, useState } from "react";
+import { Badge, ConfirmDialog, TextInput, Toast } from "@/components/ui";
 import type { CharacterSummary } from "@/domain/types";
 import { useData, useFormat, useT } from "@/lib/i18n/client";
 
@@ -15,10 +15,17 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
   const fmt = useFormat();
   const [creating, setCreating] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const confirmItem = confirmId ? items.find((i) => i.id === confirmId) : null;
   const [pending, setPending] = useState<string | null>(null);
   const [removed, setRemoved] = useState<string[]>([]);
   const [listError, setListError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    if (!listError) return;
+    const timer = setTimeout(() => setListError(null), 4000);
+    return () => clearTimeout(timer);
+  }, [listError]);
 
   const q = query.trim().toLowerCase();
   const visible = useMemo(() => {
@@ -81,16 +88,26 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
 
   return (
     <div className="flex flex-col gap-4">
+      {listError && (
+        <Toast message={listError} tone="error" onDismiss={() => setListError(null)} />
+      )}
+      <ConfirmDialog
+        open={confirmId !== null}
+        title={t("common.delete")}
+        message={t("pages.list.deleteConfirm", {
+          name: confirmItem?.name || t("pages.list.noName"),
+        })}
+        confirmLabel={t("common.confirmDelete")}
+        cancelLabel={t("common.cancel")}
+        busy={pending !== null}
+        onConfirm={() => confirmId && handleDelete(confirmId)}
+        onCancel={() => setConfirmId(null)}
+      />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-zinc-400">
           {t(
             visible.length === 1 ? "pages.list.countOne" : "pages.list.countMany",
             { count: fmt.num(visible.length) },
-          )}
-          {listError && (
-            <span role="alert" className="ml-3 text-red-400">
-              {listError}
-            </span>
           )}
         </p>
         <div className="flex items-center gap-3">
@@ -127,7 +144,6 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
           {visible.map((item) => {
             const race = d.getRace(item.raceId);
             const cls = d.getClass(item.classId);
-            const confirming = confirmId === item.id;
             return (
               <li
                 key={item.id}
@@ -181,32 +197,13 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
                   </span>
                 </Link>
                 <div className="flex shrink-0 flex-col items-stretch gap-2">
-                  {confirming ? (
-                    <>
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        disabled={pending === item.id}
-                        className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-500 disabled:opacity-50"
-                      >
-                        {pending === item.id ? t("pages.list.deleting") : t("common.confirmDelete")}
-                      </button>
-                      <button
-                        onClick={() => setConfirmId(null)}
-                        disabled={pending === item.id}
-                        className="rounded-lg border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-zinc-500"
-                      >
-                        {t("common.cancel")}
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => setConfirmId(item.id)}
-                      disabled={pending === item.id}
-                      className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-500 disabled:opacity-50"
-                    >
-                      {t("common.delete")}
-                    </button>
-                  )}
+                  <button
+                    onClick={() => setConfirmId(item.id)}
+                    disabled={pending === item.id}
+                    className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-500 disabled:opacity-50"
+                  >
+                    {pending === item.id ? t("pages.list.deleting") : t("common.delete")}
+                  </button>
                   <Link
                     href={`/character/${item.id}/edit`}
                     className="rounded-lg bg-emerald-600 px-3 py-1.5 text-center text-xs font-medium text-white transition hover:bg-emerald-500"

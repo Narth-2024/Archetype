@@ -40,6 +40,9 @@ test("create character, edit sheet, delete", async ({ page }) => {
   await page.goto("/");
   const card = page.locator("li.group").filter({ hasText: "E2E Hero" });
   await card.getByRole("button", { name: "Delete" }).click();
-  await card.getByRole("button", { name: "Confirm delete" }).click();
+  await page
+    .getByRole("alertdialog")
+    .getByRole("button", { name: "Confirm delete" })
+    .click();
   await expect(page.getByText("E2E Hero")).toHaveCount(0);
 });
