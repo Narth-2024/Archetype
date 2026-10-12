@@ -57,11 +57,13 @@ export function Card({
 export function Field({
   label,
   hint,
+  error,
   children,
   className = "",
 }: {
   label: string;
   hint?: string;
+  error?: string;
   children: React.ReactNode;
   className?: string;
 }) {
@@ -69,7 +71,11 @@ export function Field({
     <label className={`flex flex-col gap-1.5 ${className}`}>
       <span className="text-sm text-zinc-400">{label}</span>
       {children}
-      {hint && <span className="text-xs text-zinc-600">{hint}</span>}
+      {error ? (
+        <span className="text-xs text-red-400">{error}</span>
+      ) : hint ? (
+        <span className="text-xs text-zinc-600">{hint}</span>
+      ) : null}
     </label>
   );
 }

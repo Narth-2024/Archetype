@@ -249,8 +249,11 @@ function CustomItemForm({
   const [name, setName] = useState("");
   const [qty, setQty] = useState(1);
   const [category, setCategory] = useState<InventoryItem["category"]>("outro");
+  const [touched, setTouched] = useState(false);
+  const nameInvalid = touched && !name.trim();
 
   function submit() {
+    setTouched(true);
     if (!name.trim()) return;
     onAdd({
       name: name.trim(),
@@ -264,16 +267,24 @@ function CustomItemForm({
     setName("");
     setQty(1);
     setCategory("outro");
+    setTouched(false);
   }
 
   return (
     <Card title={t("wizard.equipment.customTitle")}>
       <div className="grid gap-3 sm:grid-cols-[1fr_100px_140px_auto] sm:items-end">
-        <Field label={t("wizard.name")}>
+        <Field
+          label={t("wizard.name")}
+          error={nameInvalid ? t("wizard.equipment.nameRequired") : undefined}
+        >
           <TextInput
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (touched && e.target.value.trim()) setTouched(false);
+            }}
             placeholder={t("wizard.equipment.namePlaceholder")}
+            aria-invalid={nameInvalid || undefined}
           />
         </Field>
         <Field label={t("wizard.equipment.qty")}>

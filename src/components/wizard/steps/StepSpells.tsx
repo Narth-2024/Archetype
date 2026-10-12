@@ -306,16 +306,32 @@ export function StepSpells() {
             >
               <div className="grid gap-2 sm:grid-cols-2">
                 {spells.map((spell) => (
-                  <Toggle
+                  <details
                     key={spell.id}
-                    checked={doc.spellcasting.known.includes(spell.id)}
-                    onChange={() => toggleKnown(spell.id)}
-                    label={t("wizard.spells.spellOption", {
-                      name: spell.name,
-                      time: spell.castingTime,
-                      range: fmt.distanceText(spell.range),
-                    })}
-                  />
+                    className="rounded-md border border-zinc-800"
+                  >
+                    <summary className="cursor-pointer list-none">
+                      <Toggle
+                        checked={doc.spellcasting.known.includes(spell.id)}
+                        onChange={() => toggleKnown(spell.id)}
+                        label={t("wizard.spells.spellOption", {
+                          name: spell.name,
+                          time: spell.castingTime,
+                          range: fmt.distanceText(spell.range),
+                        })}
+                      />
+                    </summary>
+                    <div className="border-t border-zinc-800 px-3 py-2 text-xs text-zinc-400">
+                      <p className="mb-1.5 text-zinc-500">
+                        {spell.school}
+                        {spell.ritual ? ` · ${t("wizard.spells.ritual")}` : ""}
+                        {spell.concentration
+                          ? ` · ${t("wizard.spells.concentration")}`
+                          : ""}
+                      </p>
+                      <p>{spell.description}</p>
+                    </div>
+                  </details>
                 ))}
               </div>
             </Card>

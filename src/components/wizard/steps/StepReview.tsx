@@ -10,14 +10,21 @@ import {
   abilityMod,
   abilityScore,
   armorClass,
+  armorWarnings,
   attackBonus,
   attackDamage,
   classEntries,
+  classSkillPools,
+  hasSpellcasting,
   initiative,
   maxHp,
   pbOf,
+  raceSkillPool,
+  raceSkills,
+  resolveProficiencies,
   speed,
   totalLevel,
+  backgroundSkills,
 } from "@/domain/calc";
 import { ABILITY_KEYS, SKILL_KEYS } from "@/domain/types";
 
@@ -40,6 +47,61 @@ export function StepReview() {
   const proficientSkills = SKILL_KEYS.filter((s) => doc.skills[s]);
   const proficientSaves = ABILITY_KEYS.filter((k) => doc.saves[k]);
   const prepared = doc.spellcasting.prepared.length;
+
+  // Pendências / avisos consolidados
+  const profs = resolveProficiencies(doc, d);
+  const pools = classSkillPools(doc, d);
+  const rSkills = raceSkills(doc, d);
+  const rPool = raceSkillPool(doc, d);
+  const bgSkills = backgroundSkills(doc, d);
+  const poolTotal = pools.reduce(
+    (acc, p, i) => acc + (i === 0 ? p.count : Math.min(2, p.options.length)),
+    0,
+  );
+  const maxSkills =
+    (bg?.skillChoices.count ?? 0) + rPool.count + poolTotal + rSkills.length;
+  const skillsOver = proficientSkills.length > maxSkills;
+  const noClass = entries.length === 0;
+  const combatWarnings = armorWarnings(doc, d);
+  const featCtx = {
+    abilities: {
+      str: abilityScore(doc, "str", d),
+      dex: abilityScore(doc, "dex", d),
+      con: abilityScore(doc, "con", d),
+      int: abilityScore(doc, "int", d),
+      wis: abilityScore(doc, "wis", d),
+      cha: abilityScore(doc, "cha", d),
+    },
+    armorProficiencies: profs.armors,
+    canCastSpells: hasSpellcasting(doc, d),
+  };
+  const unmetFeats = doc.feats
+    .map((ref) => {
+      const parsed = d.parseFeatRef(ref);
+      const feat = d.getFeat(parsed.featId);
+      if (!feat) return null;
+      const missing = d.featUnmetRequirements(feat, featCtx);
+      return missing.length > 0 ? { name: feat.name, missing } : null;
+    })
+    .filter((x): x is { name: string; missing: string[] } => x !== null);
+
+  const pendings: string[] = [];
+  if (noClass) pendings.push(t("wizard.review.noClass"));
+  if (skillsOver)
+    pendings.push(
+      t("wizard.review.skillsOver", {
+        used: fmt.num(proficientSkills.length),
+        max: fmt.num(maxSkills),
+      }),
+    );
+  for (const w of combatWarnings) pendings.push(w);
+  for (const u of unmetFeats)
+    pendings.push(
+      t("wizard.review.featUnmet", {
+        feat: u.name,
+        reqs: u.missing.join(", "),
+      }),
+    );
 
   async function finish() {
     setBusy(true);
@@ -243,6 +305,22 @@ export function StepReview() {
           </div>
         )}
       </Card>
+
+      {pendings.length > 0 && (
+        <Card title={t("wizard.review.pendingsTitle")} accent="rose">
+          <ul className="flex flex-col gap-1.5 text-sm text-rose-300">
+            {pendings.map((p, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <span aria-hidden="true">⚠</span>
+                <span>{p}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-xs text-zinc-500">
+            {t("wizard.review.pendingsHint")}
+          </p>
+        </Card>
+      )}
 
       <Card title={t("wizard.review.nextSteps")}>
         <p className="text-sm text-zinc-400">{t("wizard.review.finishHint")}</p>

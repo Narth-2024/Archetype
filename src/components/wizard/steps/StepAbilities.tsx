@@ -34,6 +34,7 @@ export function StepAbilities() {
   const d = useData();
   const fmt = useFormat();
   const [note, setNote] = useState<string | null>(null);
+  const [budgetError, setBudgetError] = useState<number | null>(null);
   const flexible = raceAbility(doc, d).flexible;
   const choices = doc.identity.raceBonusChoices;
   const mode = doc.identity.abilityMode;
@@ -49,14 +50,20 @@ export function StepAbilities() {
   }
 
   function setBase(key: AbilityKey, n: number) {
-    update((doc) => {
-      if (doc.identity.abilityMode === "pontos") {
-        const others = ABILITY_KEYS.reduce(
-          (sum, k) => (k === key ? sum : sum + pointBuyCost(doc.abilities[k])),
-          0,
-        );
-        if (others + pointBuyCost(n) > POINT_BUY_TOTAL) return;
+    if (doc.identity.abilityMode === "pontos") {
+      const others = ABILITY_KEYS.reduce(
+        (sum, k) => (k === key ? sum : sum + pointBuyCost(doc.abilities[k])),
+        0,
+      );
+      const nextSpent = others + pointBuyCost(n);
+      if (nextSpent > POINT_BUY_TOTAL) {
+        setBudgetError(nextSpent - POINT_BUY_TOTAL);
+        window.setTimeout(() => setBudgetError(null), 2500);
+        return;
       }
+    }
+    setBudgetError(null);
+    update((doc) => {
       doc.abilities[key] = n;
     });
   }
@@ -165,6 +172,16 @@ export function StepAbilities() {
       {note && (
         <p className="rounded-md border border-sky-800 bg-sky-950/40 px-3 py-2 text-sm text-sky-300">
           {note}
+        </p>
+      )}
+
+      {budgetError !== null && (
+        <p
+          role="status"
+          aria-live="polite"
+          className="rounded-md border border-red-800 bg-red-950/40 px-3 py-2 text-sm text-red-300"
+        >
+          {t("wizard.abilities.budgetExceeded", { n: fmt.num(budgetError) })}
         </p>
       )}
 

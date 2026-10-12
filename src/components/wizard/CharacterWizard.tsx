@@ -146,7 +146,10 @@ export function CharacterWizard() {
       </main>
 
       {validationError && (
-        <p className="mt-4 rounded-md border border-red-900 bg-red-950/40 px-3 py-2 text-sm text-red-400">
+        <p
+          role="alert"
+          className="mt-4 rounded-md border border-red-900 bg-red-950/40 px-3 py-2 text-sm text-red-400"
+        >
           {validationError}
         </p>
       )}

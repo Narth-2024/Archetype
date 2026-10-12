@@ -58,6 +58,7 @@ export function StepFeatures() {
   const bg = d.getBackground(doc.identity.backgroundId);
   const profs = resolveProficiencies(doc, d);
   const [featQuery, setFeatQuery] = useState("");
+  const [featFilter, setFeatFilter] = useState<"all" | "available" | "blocked">("all");
 
   const featCtx = {
     abilities: {
@@ -109,13 +110,21 @@ export function StepFeatures() {
   }
 
   const fq = featQuery.trim().toLowerCase();
-  const visibleFeats = fq
+  const baseFeats = fq
     ? d.FEATS.filter(
         (f) =>
           f.name.toLowerCase().includes(fq) ||
           f.description.toLowerCase().includes(fq),
       )
     : d.FEATS;
+  const featAvailability = (feat: (typeof d.FEATS)[number]) =>
+    d.featUnmetRequirements(feat, featCtx).length === 0;
+  const visibleFeats =
+    featFilter === "all"
+      ? baseFeats
+      : baseFeats.filter((f) =>
+          featFilter === "available" ? featAvailability(f) : !featAvailability(f),
+        );
 
   function speedDetail(speed: number, darkvision?: number | null) {
     const base = t("wizard.identity.speed", { value: fmt.distance(speed) });
@@ -315,12 +324,25 @@ export function StepFeatures() {
         })}
       <Card title={t("wizard.features.featsTitle")} accent="amber">
         <p className="mb-3 text-xs text-zinc-500">{t("wizard.features.featsHint")}</p>
-        <TextInput
-          value={featQuery}
-          onChange={(e) => setFeatQuery(e.target.value)}
-          placeholder={t("wizard.features.searchFeats")}
-          className="mb-3 w-64"
-        />
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <TextInput
+            value={featQuery}
+            onChange={(e) => setFeatQuery(e.target.value)}
+            placeholder={t("wizard.features.searchFeats")}
+            className="w-64"
+          />
+          <Select
+            value={featFilter}
+            onChange={(e) =>
+              setFeatFilter(e.target.value as "all" | "available" | "blocked")
+            }
+            className="w-40"
+          >
+            <option value="all">{t("wizard.features.filterAll")}</option>
+            <option value="available">{t("wizard.features.filterAvailable")}</option>
+            <option value="blocked">{t("wizard.features.filterBlocked")}</option>
+          </Select>
+        </div>
         {visibleFeats.length === 0 && (
           <p className="text-sm text-zinc-500">{t("wizard.features.noFeatsFound")}</p>
         )}
@@ -328,9 +350,7 @@ export function StepFeatures() {
           {visibleFeats.map((feat) => {
             const ref = doc.feats.find((r) => d.parseFeatRef(r).featId === feat.id);
             const selected = Boolean(ref);
-            const missing = selected
-              ? d.featUnmetRequirements(feat, featCtx)
-              : [];
+            const missing = d.featUnmetRequirements(feat, featCtx);
             const parsed = ref ? d.parseFeatRef(ref) : null;
             return (
               <li key={feat.id} className="rounded-md border border-zinc-800 p-3">
