@@ -24,7 +24,6 @@ import {
   resolveProficiencies,
   speed,
   totalLevel,
-  backgroundSkills,
 } from "@/domain/calc";
 import { ABILITY_KEYS, SKILL_KEYS } from "@/domain/types";
 
@@ -53,7 +52,6 @@ export function StepReview() {
   const pools = classSkillPools(doc, d);
   const rSkills = raceSkills(doc, d);
   const rPool = raceSkillPool(doc, d);
-  const bgSkills = backgroundSkills(doc, d);
   const poolTotal = pools.reduce(
     (acc, p, i) => acc + (i === 0 ? p.count : Math.min(2, p.options.length)),
     0,
