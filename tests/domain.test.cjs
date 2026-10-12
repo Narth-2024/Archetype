@@ -140,6 +140,23 @@ const { raceSkillPool } = calc;
 check("pool do humano variante = 1 perícia", raceSkillPool(human).count === 1, raceSkillPool(human));
 check("pool do elfo = 0", raceSkillPool(mage).count === 0);
 
+// --- backgrounds: auto-marcação nunca excede o count ---
+{
+  const { BACKGROUNDS, getBackground } = require(path + "/data/index.js");
+  const { backgroundSkills } = calc;
+  let bad = [];
+  for (const b of BACKGROUNDS) {
+    const sc = b.skillChoices;
+    if (!sc) continue;
+    const auto = (sc.options === "any" ? [] : sc.options).slice(0, sc.count);
+    const doc = { skills: {}, identity: { backgroundId: b.id }, saves: {}, proficiencies: { armors: [], weapons: [], tools: [], languages: [] }, spells: {} };
+    for (const s of auto) doc.skills[s] = true;
+    const marked = Object.values(doc.skills).filter(Boolean).length;
+    if (marked > sc.count) bad.push(b.id + ":" + marked + ">" + sc.count);
+  }
+  check("antecedentes: auto-marcação <= count", bad.length === 0, bad);
+}
+
 // --- v3: subraça ---
 const { getSubrace, getFeat, getSubclass, subclassesForClass, parseFeatRef, buildFeatRef, featUnmetRequirements, featAbilityBonus } = require(path + "/data/index.js");
 

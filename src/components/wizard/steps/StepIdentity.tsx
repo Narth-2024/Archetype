@@ -97,7 +97,10 @@ export function StepIdentity() {
     const next = d.getBackground(backgroundId);
     update((doc) => {
       doc.identity.backgroundId = backgroundId;
-      if (next) for (const s of next.skillChoices.options) doc.skills[s] = true;
+      if (next) {
+        const granted = next.skillChoices.options.slice(0, next.skillChoices.count);
+        for (const s of granted) doc.skills[s] = true;
+      }
     });
   }
 
