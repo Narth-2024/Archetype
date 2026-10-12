@@ -46,7 +46,7 @@ export const CLASSES: ClassDef[] = [
     toolChoices: {count: 1},
     spellcaster: "half",
     castingAbility: "int",
-    startingEquipment: [{catalogId: null, name: "Duas armas simples à escolha", qty: 1}, {catalogId: "light_crossbow", name: "Besta Leve", qty: 1}, {catalogId: "crossbow_bolts", name: "Virotes", qty: 20}, {catalogId: "scale_mail", name: "Escama", qty: 1}, {catalogId: "thieves_tools", name: "Ferramentas de ladrão", qty: 1}, {catalogId: null, name: "Kit do Aventureiro", qty: 1}],
+    startingEquipment: [{catalogId: null, name: "Duas armas simples à escolha", qty: 1}, {catalogId: "besta_leve", name: "Besta Leve", qty: 1}, {catalogId: "crossbow_bolts", name: "Virotes", qty: 20}, {catalogId: "scale_mail", name: "Escama", qty: 1}, {catalogId: "thieves_tools", name: "Ferramentas de ladrão", qty: 1}, {catalogId: null, name: "Kit do Aventureiro", qty: 1}],
     features: [
       {level: 1, name: "Conserto Mágico", description: "Ação com ferramentas em mãos: dá a um objeto não mágico luz, mensagem gravada, cheiro/som ou imagem; efeito dura até você encerrar (máx. mod. de INT objetos)." },
       {level: 1, name: "Conjuração", description: "Prepara magias = INT + metade do nível de artífice (mín. 1); conjura usando ferramentas de artesão ou de ladrão como foco e pode conjurar rituais preparados." },
@@ -78,7 +78,7 @@ export const CLASSES: ClassDef[] = [
     toolProficiencies: [],
     spellcaster: "none",
     castingAbility: null,
-    startingEquipment: [{catalogId: "greataxe", name: "Machado Grande", qty: 1}, {catalogId: "explorers_pack", name: "Kit do Explorador", qty: 1}, {catalogId: "javelin", name: "Javelin", qty: 4}],
+    startingEquipment: [{catalogId: "machado_grande", name: "Machado Grande", qty: 1}, {catalogId: "explorers_pack", name: "Kit do Explorador", qty: 1}, {catalogId: "javelin", name: "Javelin", qty: 4}],
     features: [
       {level: 1, name: "Fúria", description: "Ação bônus por 1 minuto: vantagem em Força, +dano em ataques corpo a corpo com FOR e resistência a dano; não pode conjurar ou concentrar; usos/ descanso longo." },
       {level: 1, name: "Defesa sem Armadura", description: "Sem armadura: CA = 10 + mod. DES + mod. CON (escudo permitido)." },
@@ -114,7 +114,7 @@ export const CLASSES: ClassDef[] = [
     toolChoices: {count: 1},
     spellcaster: "full",
     castingAbility: "cha",
-    startingEquipment: [{catalogId: "rapier", name: "Rapié", qty: 1}, {catalogId: "dagger", name: "Adaga", qty: 1}, {catalogId: "entertainers_pack", name: "Kit do Artista", qty: 1}, {catalogId: "lute", name: "Lira", qty: 1}],
+    startingEquipment: [{catalogId: "rapier", name: "Rapié", qty: 1}, {catalogId: "adaga", name: "Adaga", qty: 1}, {catalogId: "entertainers_pack", name: "Kit do Artista", qty: 1}, {catalogId: "lute", name: "Lira", qty: 1}],
     features: [
       {level: 1, name: "Conjuração", description: "Conjura magias de bardo com CAR; sabe 2 truques e 4 magias no 1º nível, aprende mais conforme a tabela e pode conjurar magias conhecidas como ritual." },
       {level: 1, name: "Inspiração Bardica", description: "Ação bônus concede d6 a criatura que ouve a 60 pés (10 min); o dado vira d8 no 5º, d10 no 10º e d12 no 15º; usos = mod. CAR/ descanso longo." },
@@ -146,7 +146,7 @@ export const CLASSES: ClassDef[] = [
     toolProficiencies: [],
     spellcaster: "pact",
     castingAbility: "cha",
-    startingEquipment: [{catalogId: "quarterstaff", name: "Cajado", qty: 1}, {catalogId: "light_crossbow", name: "Besta Leve", qty: 1}, {catalogId: "crossbow_bolts", name: "Virotes", qty: 20}, {catalogId: "scholars_pack", name: "Kit do Erudito", qty: 1}],
+    startingEquipment: [{catalogId: "cajado", name: "Cajado", qty: 1}, {catalogId: "besta_leve", name: "Besta Leve", qty: 1}, {catalogId: "crossbow_bolts", name: "Virotes", qty: 20}, {catalogId: "scholars_pack", name: "Kit do Erudito", qty: 1}],
     features: [
       {level: 1, name: "Patrono Sobrenatural", description: "Escolhe um patrono (Arquife, Grande Antigo, Lâmina Rubra...), que concede poderes e recursos nos níveis 6, 10 e 14." },
       {level: 1, name: "Magia de Pacto", description: "Conjura com CAR: 2 truques e 2 magias no 1º nível; todos os slots têm o mesmo nível e recuperam em descanso curto ou longo." },
@@ -173,7 +173,7 @@ export const CLASSES: ClassDef[] = [
     toolProficiencies: ["ferramentas de alquimia"],
     spellcaster: "none",
     castingAbility: null,
-    startingEquipment: [{catalogId: null, name: "Arma marcial à escolha", qty: 1}, {catalogId: "light_crossbow", name: "Besta Leve", qty: 1}, {catalogId: "crossbow_bolts", name: "Virotes", qty: 20}, {catalogId: "scale_mail", name: "Escama", qty: 1}, {catalogId: "explorers_pack", name: "Kit do Explorador", qty: 1}, {catalogId: null, name: "Ferramentas de alquimia", qty: 1}],
+    startingEquipment: [{catalogId: null, name: "Arma marcial à escolha", qty: 1}, {catalogId: "besta_leve", name: "Besta Leve", qty: 1}, {catalogId: "crossbow_bolts", name: "Virotes", qty: 20}, {catalogId: "scale_mail", name: "Escama", qty: 1}, {catalogId: "explorers_pack", name: "Kit do Explorador", qty: 1}, {catalogId: null, name: "Ferramentas de alquimia", qty: 1}],
     features: [
       {level: 1, name: "Maldição do Caçador", description: "Vantagem em Sobrevivência para rastrear e em testes de Inteligência para recordar informações sobre feéricos, demônios e mortos-vivos." },
       {level: 1, name: "Maldição de Sangue", description: "Conhece 1 maldição de sangue (nova no 6º, 10º, 14º e 18º); usos/ descanso: 1, 2 no 6º, 3 no 13º e 4 no 17º; pode ampliar sofrendo dano necrótico = dado de hemocraft." },
@@ -206,7 +206,7 @@ export const CLASSES: ClassDef[] = [
     toolProficiencies: [],
     spellcaster: "full",
     castingAbility: "wis",
-    startingEquipment: [{catalogId: "mace", name: "Maça", qty: 1}, {catalogId: "scale_mail", name: "Escama", qty: 1}, {catalogId: "shield", name: "Escudo", qty: 1}, {catalogId: "holy_symbol", name: "Símbolo Sagrado", qty: 1}],
+    startingEquipment: [{catalogId: "macea", name: "Maça", qty: 1}, {catalogId: "scale_mail", name: "Escama", qty: 1}, {catalogId: "shield", name: "Escudo", qty: 1}, {catalogId: "holy_symbol", name: "Símbolo Sagrado", qty: 1}],
     features: [
       {level: 1, name: "Conjuração", description: "Prepara magias = SAB + nível de clérigo (mín. 1); conhece 3 truques no 1º nível, conjura com símbolo sagrado e pode conjurar rituais preparados." },
       {level: 1, name: "Domínio Divino", description: "Escolhe um domínio (Vida, Luz, Conhecimento...), que define magias do domínio, habilidades próprias e usos extras de Canalizar Divindade." },
@@ -233,7 +233,7 @@ export const CLASSES: ClassDef[] = [
     toolProficiencies: ["ferramentas de druida"],
     spellcaster: "full",
     castingAbility: "wis",
-    startingEquipment: [{catalogId: "quarterstaff", name: "Cajado", qty: 1}, {catalogId: "leather", name: "Couro", qty: 1}, {catalogId: "druidic_focus", name: "Foco druídico", qty: 1}],
+    startingEquipment: [{catalogId: "cajado", name: "Cajado", qty: 1}, {catalogId: "leather", name: "Couro", qty: 1}, {catalogId: "druidic_focus", name: "Foco druídico", qty: 1}],
     features: [
       {level: 1, name: "Língua Druidica", description: "Sabe falar e escrever a língua druídica secreta; mensagens deixadas com ela só são percebidas (não decifradas) por quem também a conhece." },
       {level: 1, name: "Conjuração", description: "Prepara magias = SAB + nível de druída (mín. 1); conjura com foco druídico e pode conjurar magias preparadas como ritual." },
@@ -262,7 +262,7 @@ export const CLASSES: ClassDef[] = [
     toolProficiencies: [],
     spellcaster: "full",
     castingAbility: "cha",
-    startingEquipment: [{catalogId: "light_crossbow", name: "Besta Leve", qty: 1}, {catalogId: "crossbow_bolts", name: "Virotes", qty: 20}, {catalogId: "component_pouch", name: "Bolsa de componentes", qty: 1}, {catalogId: "explorers_pack", name: "Kit do Explorador", qty: 1}],
+    startingEquipment: [{catalogId: "besta_leve", name: "Besta Leve", qty: 1}, {catalogId: "crossbow_bolts", name: "Virotes", qty: 20}, {catalogId: "component_pouch", name: "Bolsa de componentes", qty: 1}, {catalogId: "explorers_pack", name: "Kit do Explorador", qty: 1}],
     features: [
       {level: 1, name: "Conjuração", description: "Conjura magias de feiticeiro com CAR; sabe 4 truques e 2 magias no 1º nível e aprende mais conforme a tabela." },
       {level: 1, name: "Origem Feiticeira", description: "Escolhe uma origem (Sangue Dracônico, Magia Selvagem...), que descreve a fonte do seu poder inato." },
@@ -289,7 +289,7 @@ export const CLASSES: ClassDef[] = [
     toolProficiencies: [],
     spellcaster: "none",
     castingAbility: null,
-    startingEquipment: [{catalogId: "chain_mail", name: "Malha", qty: 1}, {catalogId: "longsword", name: "Espada Longa", qty: 1}, {catalogId: "shield", name: "Escudo", qty: 1}, {catalogId: "longbow", name: "Arco Longo", qty: 1}, {catalogId: "arrows", name: "Flechas", qty: 20}],
+    startingEquipment: [{catalogId: "chain_mail", name: "Malha", qty: 1}, {catalogId: "espada_longa", name: "Espada Longa", qty: 1}, {catalogId: "shield", name: "Escudo", qty: 1}, {catalogId: "arco_longo", name: "Arco Longo", qty: 1}, {catalogId: "arrows", name: "Flechas", qty: 20}],
     features: [
       {level: 1, name: "Estilo de Combate", description: "Escolhe um estilo (defesa, duelo, proteção, arma a duas mãos, tiro...); nenhuma opção pode ser escolhida duas vezes." },
       {level: 1, name: "Segundo Fôlego", description: "Ação bônus recupera 1d10 + nível de guerreiro PV; 1/ descanso curto." },
@@ -316,7 +316,7 @@ export const CLASSES: ClassDef[] = [
     toolProficiencies: ["ferramentas de ladrão"],
     spellcaster: "none",
     castingAbility: null,
-    startingEquipment: [{catalogId: "shortsword", name: "Espada Curta", qty: 1}, {catalogId: "shortbow", name: "Arco Curto", qty: 1}, {catalogId: "arrows", name: "Flechas", qty: 20}, {catalogId: "thieves_tools", name: "Ferramentas de ladrão", qty: 1}, {catalogId: "thieves_pack", name: "Kit do Ladrão", qty: 1}],
+    startingEquipment: [{catalogId: "espada_curta", name: "Espada Curta", qty: 1}, {catalogId: "arco_curto", name: "Arco Curto", qty: 1}, {catalogId: "arrows", name: "Flechas", qty: 20}, {catalogId: "thieves_tools", name: "Ferramentas de ladrão", qty: 1}, {catalogId: "thieves_pack", name: "Kit do Ladrão", qty: 1}],
     features: [
       {level: 1, name: "Perícia", description: "Dobra o bônus de proficiência em 2 perícias ou em 1 perícia e ferramentas de ladrão; escolhe mais 2 proficiências no 6º nível." },
       {level: 1, name: "Ataque Furtivo", description: "+1d6 de dano (sobe 1d6 por nível de ladino, até 10d6) se tiver vantagem ou o alvo estiver a 5 pés de um inimigo; exige arma ágil ou à distância." },
@@ -349,7 +349,7 @@ export const CLASSES: ClassDef[] = [
     toolProficiencies: [],
     spellcaster: "full",
     castingAbility: "int",
-    startingEquipment: [{catalogId: "quarterstaff", name: "Cajado", qty: 1}, {catalogId: "component_pouch", name: "Bolsa de componentes", qty: 1}, {catalogId: "spellbook", name: "Grimório", qty: 1}],
+    startingEquipment: [{catalogId: "cajado", name: "Cajado", qty: 1}, {catalogId: "component_pouch", name: "Bolsa de componentes", qty: 1}, {catalogId: "spellbook", name: "Grimório", qty: 1}],
     features: [
       {level: 1, name: "Conjuração", description: "Grimório com 6 magias de 1º nível e 3 truques; prepara magias = mod. INT + nível de mago (mín. 1) e pode conjurar rituais presentes no grimório." },
       {level: 1, name: "Recuperação Arcana", description: "Uma vez por dia, ao terminar um descanso curto, recupera slots de nível total ≤ metade do nível de mago (arred. para cima; nenhum de 6º ou superior)." },
@@ -376,7 +376,7 @@ export const CLASSES: ClassDef[] = [
     toolChoices: {count: 1},
     spellcaster: "none",
     castingAbility: null,
-    startingEquipment: [{catalogId: "shortsword", name: "Espada Curta", qty: 1}, {catalogId: "explorers_pack", name: "Kit do Explorador", qty: 1}, {catalogId: "darts", name: "Dardos", qty: 10}],
+    startingEquipment: [{catalogId: "espada_curta", name: "Espada Curta", qty: 1}, {catalogId: "explorers_pack", name: "Kit do Explorador", qty: 1}, {catalogId: "dardo", name: "Dardos", qty: 10}],
     features: [
       {level: 1, name: "Defesa sem Armadura", description: "Sem armadura nem escudo: CA = 10 + mod. DES + mod. SAB." },
       {level: 1, name: "Artes Marciais", description: "Usa DES em golpes desarmados e com armas de monge; dano d4 (d6 no 5º, d8 no 11º, d10 no 17º) e um golpe desarmado extra como ação bônus." },
@@ -418,7 +418,7 @@ export const CLASSES: ClassDef[] = [
     toolProficiencies: [],
     spellcaster: "half",
     castingAbility: "cha",
-    startingEquipment: [{catalogId: "longsword", name: "Espada Longa", qty: 1}, {catalogId: "chain_mail", name: "Malha", qty: 1}, {catalogId: "shield", name: "Escudo", qty: 1}, {catalogId: "holy_symbol", name: "Símbolo Sagrado", qty: 1}],
+    startingEquipment: [{catalogId: "espada_longa", name: "Espada Longa", qty: 1}, {catalogId: "chain_mail", name: "Malha", qty: 1}, {catalogId: "shield", name: "Escudo", qty: 1}, {catalogId: "holy_symbol", name: "Símbolo Sagrado", qty: 1}],
     features: [
       {level: 1, name: "Sentido Divino", description: "Ação: detecta celestiais, demônios e mortos-vivos a 60 pés (não atrás de cobertura total) até o fim do próximo turno; usos = 1 + mod. CAR/ descanso longo." },
       {level: 1, name: "Imposição das Mãos", description: "Pool de cura = 5 × nível de paladino (recupera no descanso longo); toque restaura PV ou gasta 5 para curar uma doença ou neutralizar um veneno." },
@@ -453,7 +453,7 @@ export const CLASSES: ClassDef[] = [
     toolProficiencies: [],
     spellcaster: "half",
     castingAbility: "wis",
-    startingEquipment: [{catalogId: "shortsword", name: "Espada Curta", qty: 1}, {catalogId: "longbow", name: "Arco Longo", qty: 1}, {catalogId: "arrows", name: "Flechas", qty: 20}, {catalogId: "explorers_pack", name: "Kit do Explorador", qty: 1}],
+    startingEquipment: [{catalogId: "espada_curta", name: "Espada Curta", qty: 1}, {catalogId: "arco_longo", name: "Arco Longo", qty: 1}, {catalogId: "arrows", name: "Flechas", qty: 20}, {catalogId: "explorers_pack", name: "Kit do Explorador", qty: 1}],
     features: [
       {level: 1, name: "Inimigo Favorito", description: "Vantagem em Sobrevivência para rastrear e em Inteligência para lembrar sobre o inimigo favorito; escolhe mais um no 6º e no 14º nível e um idioma." },
       {level: 1, name: "Explorador Natural", description: "Terreno favorito: dobra a proficiência em testes relacionados e dá vantagens de viagem; escolhe +1 terreno no 6º e +1 no 10º nível." },

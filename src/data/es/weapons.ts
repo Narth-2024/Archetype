@@ -43,6 +43,12 @@ export const WEAPONS: WeaponDef[] = [
   { id: "cajado", name: "Bastón", category: "simples", kind: "corpo", damage: "1d6", damageType: "contundente", weight: 4, properties: ["Versátil (1d8)"], finesse: false },
   { id: "foiche", name: "Hoz", category: "simples", kind: "corpo", damage: "1d4", damageType: "cortante", weight: 2, properties: ["Ligera"], finesse: false },
   { id: "foice_longa", name: "Guja", category: "marcial", kind: "corpo", damage: "1d10", damageType: "cortante", weight: 18, properties: ["Dos manos"], finesse: false, twoHanded: true },
+  { id: "macea", name: "Maza", category: "simples", kind: "corpo", damage: "1d6", damageType: "contundente", weight: 4, properties: [], finesse: false },
+  { id: "alabarda", name: "Alabarda", category: "marcial", kind: "corpo", damage: "1d10", damageType: "cortante", weight: 18, properties: ["Alcance (10 pies)", "Dos manos"], finesse: false, twoHanded: true },
+  { id: "marreta", name: "Mazo", category: "marcial", kind: "corpo", damage: "2d6", damageType: "contundente", weight: 10, properties: ["Dos manos"], finesse: false, twoHanded: true },
+  { id: "estrela_do_alvorecer", name: "Estrella del Alba", category: "marcial", kind: "corpo", damage: "1d8", damageType: "perforante", weight: 6, properties: [], finesse: false },
+  { id: "gravina", name: "Cerbatana", category: "marcial", kind: "distancia", damage: "1", damageType: "perforante", weight: 1, properties: ["Munición", "De carga"], finesse: false, range: "25/100" },
+  { id: "rede", name: "Red", category: "marcial", kind: "distancia", damage: "—", damageType: "—", weight: 3, properties: ["Lanzamiento (5/15)"], finesse: false, range: "5/15" },
 ];
 
 export function getWeapon(id: string): WeaponDef | undefined {

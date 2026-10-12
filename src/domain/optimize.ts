@@ -25,6 +25,8 @@ export const POINT_BUY_TOTAL = 27;
 
 export const STANDARD_ARRAY = [15, 14, 13, 12, 10, 8];
 
+export const POINT_BUY_VALUES = [8, 9, 10, 11, 12, 13, 14, 15];
+
 export function pointBuyCost(value: number): number {
   return POINT_COSTS[value] ?? Number.POSITIVE_INFINITY;
 }
@@ -55,6 +57,20 @@ function weightsFor(c: CharacterDoc, d: DataBundle): Record<AbilityKey, number> 
     const priority = d.classAbilityPriority(e.classId);
     for (const key of priority.primary) weights[key] += (4 * share) / priority.primary.length;
     for (const key of priority.secondary) weights[key] += share / priority.secondary.length;
+  }
+  return weights;
+}
+
+/** Priority weights for distributing the standard array (primary abilities first). */
+export function abilityPriorityWeights(
+  c: CharacterDoc,
+  d: DataBundle = PT_BUNDLE,
+): Record<AbilityKey, number> {
+  const weights: Record<AbilityKey, number> = { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 };
+  for (const e of classEntries(c)) {
+    const priority = d.classAbilityPriority(e.classId);
+    for (const key of priority.primary) weights[key] += 2;
+    for (const key of priority.secondary) weights[key] += 1;
   }
   return weights;
 }
@@ -166,18 +182,97 @@ export function suggestAbilities(c: CharacterDoc, d: DataBundle = PT_BUNDLE): Su
 
   const mode = c.identity.abilityMode;
   const candidates =
-    mode === "array" ? arrayPermutations() : allCombinations(STANDARD_ARRAY, true);
+    mode === "array"
+      ? arrayPermutations()
+      : allCombinations(mode === "pontos" ? POINT_BUY_VALUES : STANDARD_ARRAY, true);
+
+  // Fast pre-rank without racial flex (scored inline in DFS, no intermediate
+  // objects), then refine the top candidates with the full flex search.
+  const flexCount = flexible?.count ?? 0;
+  const scoreOfBase = (values: number[]) => {
+    let weighted = 0;
+    let valueTerm = 0;
+    let modSum = 0;
+    for (let i = 0; i < ABILITY_KEYS.length; i++) {
+      const key = ABILITY_KEYS[i];
+      const value = values[i] + (fixed[key] ?? 0);
+      const mod = abilityMod(value);
+      weighted += weights[key] * mod;
+      valueTerm += weights[key] * value;
+      modSum += mod;
+    }
+    return weighted + 0.01 * valueTerm + 0.001 * modSum;
+  };
+
+  const K = 200;
+  const top: { values: number[]; score: number }[] = [];
+  let worstTop = Number.POSITIVE_INFINITY;
+  const considerTop = (values: number[], score: number) => {
+    if (top.length < K || score > worstTop) {
+      top.push({ values: [...values], score });
+      if (top.length > K * 2) {
+        top.sort((a, b) => b.score - a.score);
+        top.length = K;
+      }
+      worstTop = top.length < K ? Number.NEGATIVE_INFINITY : Math.min(...top.map((x) => x.score));
+    }
+  };
+
+  if (mode === "array" || mode === "livre") {
+    for (const abilities of candidates) {
+      const values = ABILITY_KEYS.map((k) => abilities[k]);
+      considerTop(values, scoreOfBase(values));
+    }
+  } else {
+    const values = POINT_BUY_VALUES;
+    const cur: number[] = [];
+    const dfs = (index: number, spent: number, weighted: number, valueTerm: number, modSum: number) => {
+      if (index === ABILITY_KEYS.length) {
+        considerTop(cur, weighted + 0.01 * valueTerm + 0.001 * modSum);
+        return;
+      }
+      const key = ABILITY_KEYS[index];
+      for (const v of values) {
+        const cost = pointBuyCost(v);
+        if (spent + cost > POINT_BUY_TOTAL) continue;
+        const value = v + (fixed[key] ?? 0);
+        const mod = abilityMod(value);
+        cur.push(v);
+        dfs(
+          index + 1,
+          spent + cost,
+          weighted + weights[key] * mod,
+          valueTerm + weights[key] * value,
+          modSum + mod,
+        );
+        cur.pop();
+      }
+    };
+    dfs(0, 0, 0, 0, 0);
+  }
+  top.sort((a, b) => b.score - a.score);
 
   let best: (Suggestion & { score: number }) | null = null;
-  for (const abilities of candidates) {
-    const { choices, score } = chooseFlex(abilities, fixed, flexible, weights);
-    const candidate: Suggestion & { score: number } = {
-      abilities,
-      raceChoices: choices,
-      note: "",
-      score,
-    };
-    if (!best || candidate.score > best.score) best = candidate;
+  if (flexCount === 0) {
+    const winner = top[0];
+    if (winner) {
+      const abilities = {} as Record<AbilityKey, number>;
+      ABILITY_KEYS.forEach((k, i) => (abilities[k] = winner.values[i]));
+      best = { abilities, raceChoices: [], note: "", score: winner.score };
+    }
+  } else {
+    for (const { values } of top) {
+      const abilities = {} as Record<AbilityKey, number>;
+      ABILITY_KEYS.forEach((k, i) => (abilities[k] = values[i]));
+      const { choices, score } = chooseFlex(abilities, fixed, flexible, weights);
+      const candidate: Suggestion & { score: number } = {
+        abilities,
+        raceChoices: choices,
+        note: "",
+        score,
+      };
+      if (!best || candidate.score > best.score) best = candidate;
+    }
   }
 
   if (!best) throw new Error("sem candidatos");
@@ -187,7 +282,7 @@ export function suggestAbilities(c: CharacterDoc, d: DataBundle = PT_BUNDLE): Su
     .map((e) => d.getClass(e.classId)?.name ?? e.classId)
     .join(" + ");
   const ranked = [...ABILITY_KEYS].sort((a, b) => weights[b] - weights[a]);
-  const top = ranked
+  const topAbilities = ranked
     .filter((k) => weights[k] > 0)
     .slice(0, 3)
     .map((k) => d.ABILITY_ABBR[k] ?? k.toUpperCase());
@@ -195,7 +290,7 @@ export function suggestAbilities(c: CharacterDoc, d: DataBundle = PT_BUNDLE): Su
   const template = classNames ? d.LABELS.suggestion : d.LABELS.suggestionNone;
   best.note = fill(template, {
     classes: classNames ? ` (${classNames})` : "",
-    priorities: top.join(", ") || `${d.ABILITY_ABBR.con ?? "CON"}/${d.ABILITY_ABBR.dex ?? "DES"}`,
+    priorities: topAbilities.join(", ") || `${d.ABILITY_ABBR.con ?? "CON"}/${d.ABILITY_ABBR.dex ?? "DES"}`,
   });
   return best;
 }

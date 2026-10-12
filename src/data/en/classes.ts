@@ -78,7 +78,7 @@ export const CLASSES: ClassDef[] = [
         "qty": 1
       },
       {
-        "catalogId": "light_crossbow",
+        "catalogId": "besta_leve",
         "name": "Besta Leve",
         "qty": 1
       },
@@ -212,7 +212,7 @@ export const CLASSES: ClassDef[] = [
     "castingAbility": null,
     "startingEquipment": [
       {
-        "catalogId": "greataxe",
+        "catalogId": "machado_grande",
         "name": "Machado Grande",
         "qty": 1
       },
@@ -373,7 +373,7 @@ export const CLASSES: ClassDef[] = [
         "qty": 1
       },
       {
-        "catalogId": "dagger",
+        "catalogId": "adaga",
         "name": "Adaga",
         "qty": 1
       },
@@ -495,12 +495,12 @@ export const CLASSES: ClassDef[] = [
     "castingAbility": "cha",
     "startingEquipment": [
       {
-        "catalogId": "quarterstaff",
+        "catalogId": "cajado",
         "name": "Cajado",
         "qty": 1
       },
       {
-        "catalogId": "light_crossbow",
+        "catalogId": "besta_leve",
         "name": "Besta Leve",
         "qty": 1
       },
@@ -608,7 +608,7 @@ export const CLASSES: ClassDef[] = [
         "qty": 1
       },
       {
-        "catalogId": "light_crossbow",
+        "catalogId": "besta_leve",
         "name": "Besta Leve",
         "qty": 1
       },
@@ -746,7 +746,7 @@ export const CLASSES: ClassDef[] = [
     "castingAbility": "wis",
     "startingEquipment": [
       {
-        "catalogId": "mace",
+        "catalogId": "macea",
         "name": "Maça",
         "qty": 1
       },
@@ -853,7 +853,7 @@ export const CLASSES: ClassDef[] = [
     "castingAbility": "wis",
     "startingEquipment": [
       {
-        "catalogId": "quarterstaff",
+        "catalogId": "cajado",
         "name": "Cajado",
         "qty": 1
       },
@@ -961,7 +961,7 @@ export const CLASSES: ClassDef[] = [
     "castingAbility": "cha",
     "startingEquipment": [
       {
-        "catalogId": "light_crossbow",
+        "catalogId": "besta_leve",
         "name": "Besta Leve",
         "qty": 1
       },
@@ -1072,7 +1072,7 @@ export const CLASSES: ClassDef[] = [
         "qty": 1
       },
       {
-        "catalogId": "longsword",
+        "catalogId": "espada_longa",
         "name": "Espada Longa",
         "qty": 1
       },
@@ -1082,7 +1082,7 @@ export const CLASSES: ClassDef[] = [
         "qty": 1
       },
       {
-        "catalogId": "longbow",
+        "catalogId": "arco_longo",
         "name": "Arco Longo",
         "qty": 1
       },
@@ -1185,12 +1185,12 @@ export const CLASSES: ClassDef[] = [
     "castingAbility": null,
     "startingEquipment": [
       {
-        "catalogId": "shortsword",
+        "catalogId": "espada_curta",
         "name": "Espada Curta",
         "qty": 1
       },
       {
-        "catalogId": "shortbow",
+        "catalogId": "arco_curto",
         "name": "Arco Curto",
         "qty": 1
       },
@@ -1323,7 +1323,7 @@ export const CLASSES: ClassDef[] = [
     "castingAbility": "int",
     "startingEquipment": [
       {
-        "catalogId": "quarterstaff",
+        "catalogId": "cajado",
         "name": "Cajado",
         "qty": 1
       },
@@ -1416,7 +1416,7 @@ export const CLASSES: ClassDef[] = [
     "castingAbility": null,
     "startingEquipment": [
       {
-        "catalogId": "shortsword",
+        "catalogId": "espada_curta",
         "name": "Espada Curta",
         "qty": 1
       },
@@ -1426,7 +1426,7 @@ export const CLASSES: ClassDef[] = [
         "qty": 1
       },
       {
-        "catalogId": "darts",
+        "catalogId": "dardo",
         "name": "Dardos",
         "qty": 10
       }
@@ -1591,7 +1591,7 @@ export const CLASSES: ClassDef[] = [
     "castingAbility": "cha",
     "startingEquipment": [
       {
-        "catalogId": "longsword",
+        "catalogId": "espada_longa",
         "name": "Espada Longa",
         "qty": 1
       },
@@ -1737,12 +1737,12 @@ export const CLASSES: ClassDef[] = [
     "castingAbility": "wis",
     "startingEquipment": [
       {
-        "catalogId": "shortsword",
+        "catalogId": "espada_curta",
         "name": "Espada Curta",
         "qty": 1
       },
       {
-        "catalogId": "longbow",
+        "catalogId": "arco_longo",
         "name": "Arco Longo",
         "qty": 1
       },

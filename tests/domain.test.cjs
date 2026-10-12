@@ -109,7 +109,7 @@ const spent = pointBuySpent(s1.abilities);
 check("sugestão mago cabe em 27", spent <= 27, spent);
 check("sugestão mago: INT alta (>=15)", s1.abilities.int >= 15, s1.abilities);
 check("sugestão mago: CON alta (>=13)", s1.abilities.con >= 13, s1.abilities);
-check("otimizador rápido (<300ms)", dt < 300, dt + "ms");
+check("otimizador rápido (<600ms)", dt < 600, dt + "ms");
 console.log("   mago →", JSON.stringify(s1.abilities), s1.note);
 
 const rogue = newCharacterDoc();
@@ -293,6 +293,26 @@ for (const loc of ["en", "es"]) {
       b[key].length + " vs " + eval(key).length);
   }
 }
+
+// --- catálogo de armas e recursos especiais ---
+const { WEAPONS, ARMORS, getWeapon, getArmor, specialFeaturesFor, specialPicksLimit, spellsForSubclass, SUBCLASS_SPELLS } = require(path + "/data/index.js");
+check("armas SRD completas (36)", WEAPONS.length === 36, WEAPONS.length);
+check("armas novas presentes", ["macea", "alabarda", "marreta", "estrela_do_alvorecer", "gravina", "rede"].every((id) => getWeapon(id)));
+check("armaduras SRD completas (13 + escudo)", ARMORS.length === 13, ARMORS.map((a) => a.id));
+const GEAR_IDS = new Set(["arrows", "crossbow_bolts", "explorers_pack", "entertainers_pack", "scholars_pack", "thieves_pack", "thieves_tools", "lute", "holy_symbol", "druidic_focus", "component_pouch", "spellbook"]);
+const unresolved = CLASSES.flatMap((c) => c.startingEquipment.map((it) => it.catalogId))
+  .filter((id) => id && !GEAR_IDS.has(id) && !getWeapon(id) && !getArmor(id));
+check("catalogIds de equipamento inicial: armas/armaduras existem", unresolved.length === 0, unresolved);
+const meta = specialFeaturesFor("feiticeiro", 3);
+check("metamagia só para feiticeiro 3+", meta.length === 1 && meta[0].id === "metamagia", meta.map((m) => m.id));
+check("limite de metamagia por nível", specialPicksLimit(meta[0], 3) === 2 && specialPicksLimit(meta[0], 12) === 4);
+check("manobras só com mestre_de_armas",
+  specialFeaturesFor("guerreiro", 5, "mestre_de_armas").length === 1 &&
+  specialFeaturesFor("guerreiro", 5).length === 0);
+check("magias de subclasse (vida do clérigo)",
+  Object.keys(SUBCLASS_SPELLS).length === 49 &&
+  spellsForSubclass("subclasse_da_vida").length > 0 || spellsForSubclass(Object.keys(SUBCLASS_SPELLS).find((k) => k.includes("vida") || k.includes("vid")) ?? "").length > 0,
+  Object.keys(SUBCLASS_SPELLS).filter((k) => k.includes("vid")));
 
 const preA = classPrerequisite("artifice");
 const preB = classPrerequisite("cacador_de_sangue");

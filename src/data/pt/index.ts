@@ -22,11 +22,14 @@ export { CLASSES, getClass, classAbilityPriority, classPrerequisite } from "./cl
 export type { ClassDef, SpellcasterType } from "./classes";
 export { BACKGROUNDS, getBackground } from "./backgrounds";
 export type { BackgroundDef } from "./backgrounds";
+export { SPECIAL_FEATURES, specialFeaturesFor, specialPicksLimit } from "./specials";
+export type { SpecialFeatureDef, SpecialFeatureItem } from "./specials";
 export { WEAPONS, getWeapon } from "./weapons";
 export type { WeaponDef } from "./weapons";
 export { ARMORS, getArmor } from "./armors";
 export type { ArmorDef } from "./armors";
 export { SPELLS, getSpell, spellsForClass } from "./spells";
+export { SUBCLASS_SPELLS, spellsForSubclass } from "./subclass-spells";
 export type { SpellDef } from "./spells";
 export { slotsForLevel } from "./spell-slots";
 export type { SlotGroup } from "./spell-slots";

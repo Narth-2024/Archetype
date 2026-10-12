@@ -43,6 +43,12 @@ export const WEAPONS: WeaponDef[] = [
   { id: "cajado", name: "Cajado", category: "simples", kind: "corpo", damage: "1d6", damageType: "contusão", weight: 4, properties: ["Versátil (1d8)"], finesse: false },
   { id: "foiche", name: "Foice", category: "simples", kind: "corpo", damage: "1d4", damageType: "cortante", weight: 2, properties: ["Leve"], finesse: false },
   { id: "foice_longa", name: "Foice Longa", category: "marcial", kind: "corpo", damage: "1d10", damageType: "cortante", weight: 18, properties: ["Duas mãos"], finesse: false, twoHanded: true },
+  { id: "macea", name: "Maça", category: "simples", kind: "corpo", damage: "1d6", damageType: "contusão", weight: 4, properties: [], finesse: false },
+  { id: "alabarda", name: "Alabarda", category: "marcial", kind: "corpo", damage: "1d10", damageType: "cortante", weight: 18, properties: ["Alcance (10 pés)", "Duas mãos"], finesse: false, twoHanded: true },
+  { id: "marreta", name: "Marreta", category: "marcial", kind: "corpo", damage: "2d6", damageType: "contusão", weight: 10, properties: ["Duas mãos"], finesse: false, twoHanded: true },
+  { id: "estrela_do_alvorecer", name: "Estrela do Alvorecer", category: "marcial", kind: "corpo", damage: "1d8", damageType: "perfuração", weight: 6, properties: [], finesse: false },
+  { id: "gravina", name: "Gravina", category: "marcial", kind: "distancia", damage: "1", damageType: "perfuração", weight: 1, properties: ["Munição", "Recarga"], finesse: false, range: "25/100" },
+  { id: "rede", name: "Rede", category: "marcial", kind: "distancia", damage: "—", damageType: "—", weight: 3, properties: ["Arremesso (5/15)"], finesse: false, range: "5/15" },
 ];
 
 export function getWeapon(id: string): WeaponDef | undefined {

@@ -1,9 +1,11 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { useWizard } from "../context";
-import { Badge, Card, NumberInput, Toggle } from "@/components/ui";
+import { Badge, Card, NumberInput, TextInput, Toggle } from "@/components/ui";
 import { useT, useData, useFormat } from "@/lib/i18n/client";
 import type { ClassDef, SpellDef } from "@/data";
+import { spellsForSubclass } from "@/data";
 import {
   classEntries,
   spellAttackBonus,
@@ -34,12 +36,38 @@ export function StepSpells() {
   const t = useT();
   const d = useData();
   const fmt = useFormat();
+  const [query, setQuery] = useState("");
+  const [sourceFilter, setSourceFilter] = useState("all");
 
   const casterClasses: ClassDef[] = [];
   for (const e of classEntries(doc)) {
     const cls = d.CLASSES.find((c) => c.id === e.classId);
     if (cls && cls.spellcaster !== "none") casterClasses.push(cls);
   }
+
+  const filterOptions = useMemo(() => {
+    const opts: { value: string; label: string }[] = [
+      { value: "all", label: t("wizard.spells.filterAll") },
+    ];
+    for (const e of classEntries(doc)) {
+      const cls = d.getClass(e.classId);
+      if (!cls || cls.spellcaster === "none") continue;
+      opts.push({ value: `class:${cls.id}`, label: cls.name });
+      if (e.subclassId) {
+        const sub = d.getSubclass(e.subclassId);
+        if (sub && spellsForSubclass(sub.id).length > 0) {
+          opts.push({
+            value: `subclass:${sub.id}`,
+            label: t("wizard.spells.filterSubclass", {
+              name: sub.name,
+              cls: cls.name,
+            }),
+          });
+        }
+      }
+    }
+    return opts;
+  }, [doc, d, t]);
 
   if (casterClasses.length === 0) {
     return (
@@ -55,7 +83,23 @@ export function StepSpells() {
       if (!catalogMap.has(spell.id)) catalogMap.set(spell.id, spell);
     }
   }
-  const catalog = [...catalogMap.values()];
+  let catalog = [...catalogMap.values()];
+  if (sourceFilter.startsWith("class:")) {
+    const classId = sourceFilter.slice("class:".length);
+    catalog = catalog.filter((s) => s.classes.includes(classId));
+  } else if (sourceFilter.startsWith("subclass:")) {
+    const allowed = new Set(spellsForSubclass(sourceFilter.slice("subclass:".length)));
+    catalog = catalog.filter((s) => allowed.has(s.id));
+  }
+  const q = query.trim().toLowerCase();
+  if (q) {
+    catalog = catalog.filter(
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        s.description.toLowerCase().includes(q) ||
+        s.school.toLowerCase().includes(q),
+    );
+  }
 
   const dc = spellSaveDc(doc, d);
   const atk = spellAttackBonus(doc, d);
@@ -204,6 +248,46 @@ export function StepSpells() {
                 </div>
               ))}
           </div>
+        )}
+      </Card>
+
+      <Card
+        title={t("wizard.spells.catalogTitle", {
+          n: fmt.num(catalog.length),
+        })}
+        accent="violet"
+      >
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="flex flex-col gap-1 text-xs text-zinc-500">
+            {t("wizard.spells.searchLabel")}
+            <TextInput
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t("wizard.spells.searchPlaceholder")}
+              className="w-56"
+            />
+          </label>
+          {filterOptions.length > 1 && (
+            <label className="flex flex-col gap-1 text-xs text-zinc-500">
+              {t("wizard.spells.filterLabel")}
+              <select
+                value={sourceFilter}
+                onChange={(e) => setSourceFilter(e.target.value)}
+                className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-200"
+              >
+                {filterOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+        </div>
+        {catalog.length === 0 && (
+          <p className="mt-2 text-sm text-zinc-500">
+            {t("wizard.spells.noResults")}
+          </p>
         )}
       </Card>
 

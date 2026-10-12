@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { useWizard } from "../context";
-import { Badge, Card, Select } from "@/components/ui";
+import { Badge, Card, Select, TextInput } from "@/components/ui";
 import { useT, useData, useFormat } from "@/lib/i18n/client";
 import type { AbilityKey } from "@/domain/types";
+import { specialFeaturesFor, specialPicksLimit } from "@/data";
 import {
   abilityScore,
   classEntries,
@@ -55,6 +57,7 @@ export function StepFeatures() {
   }
   const bg = d.getBackground(doc.identity.backgroundId);
   const profs = resolveProficiencies(doc, d);
+  const [featQuery, setFeatQuery] = useState("");
 
   const featCtx = {
     abilities: {
@@ -95,6 +98,24 @@ export function StepFeatures() {
       if (idx >= 0) doc.feats[idx] = d.buildFeatRef(featId, ability as AbilityKey);
     });
   }
+
+  function toggleSpecialPick(itemId: string) {
+    update((doc) => {
+      const current = doc.specialPicks ?? [];
+      doc.specialPicks = current.includes(itemId)
+        ? current.filter((id) => id !== itemId)
+        : [...current, itemId];
+    });
+  }
+
+  const fq = featQuery.trim().toLowerCase();
+  const visibleFeats = fq
+    ? d.FEATS.filter(
+        (f) =>
+          f.name.toLowerCase().includes(fq) ||
+          f.description.toLowerCase().includes(fq),
+      )
+    : d.FEATS;
 
   function speedDetail(speed: number, darkvision?: number | null) {
     const base = t("wizard.identity.speed", { value: fmt.distance(speed) });
@@ -186,6 +207,79 @@ export function StepFeatures() {
           badge={t("wizard.badge.class")}
         />
       ))}
+      {classes.map(({ cls, level }) => {
+        const subclassId = classEntries(doc).find(
+          (e) => e.classId === cls.id,
+        )?.subclassId;
+        const specials = specialFeaturesFor(cls.id, level, subclassId);
+        if (specials.length === 0) return null;
+        const specialPicks = doc.specialPicks ?? [];
+        return (
+          <Card
+            key={`${cls.id}-specials`}
+            title={t("wizard.features.specialTitle", { name: cls.name })}
+            accent="amber"
+          >
+            <div className="flex flex-col gap-5">
+              {specials.map((sf) => {
+                const limit = specialPicksLimit(sf, level);
+                const used = sf.items.filter((i) =>
+                  specialPicks.includes(i.id),
+                ).length;
+                const items = sf.items.filter(
+                  (i) => !i.minLevel || i.minLevel <= level,
+                );
+                return (
+                  <div key={sf.id}>
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-medium text-zinc-200">
+                        {sf.name}
+                      </span>
+                      {limit !== null && (
+                        <span
+                          className={`rounded border px-2 py-0.5 text-xs ${
+                            used > limit
+                              ? "border-red-700 text-red-400"
+                              : "border-zinc-700 text-zinc-400"
+                          }`}
+                        >
+                          {t("wizard.features.specialCounter", {
+                            used: fmt.num(used),
+                            max: fmt.num(limit),
+                          })}
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {items.map((item) => (
+                        <label
+                          key={item.id}
+                          className="flex cursor-pointer items-start gap-2 rounded-md border border-zinc-800 p-3"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={specialPicks.includes(item.id)}
+                            onChange={() => toggleSpecialPick(item.id)}
+                            className="mt-1 accent-amber-600"
+                          />
+                          <span className="flex-1">
+                            <span className="text-sm font-medium text-zinc-200">
+                              {item.name}
+                            </span>
+                            <p className="mt-0.5 text-xs text-zinc-400">
+                              {item.description}
+                            </p>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        );
+      })}
       {classEntries(doc)
         .filter((e) => e.subclassId)
         .map((e) => {
@@ -221,8 +315,17 @@ export function StepFeatures() {
         })}
       <Card title={t("wizard.features.featsTitle")} accent="amber">
         <p className="mb-3 text-xs text-zinc-500">{t("wizard.features.featsHint")}</p>
+        <TextInput
+          value={featQuery}
+          onChange={(e) => setFeatQuery(e.target.value)}
+          placeholder={t("wizard.features.searchFeats")}
+          className="mb-3 w-64"
+        />
+        {visibleFeats.length === 0 && (
+          <p className="text-sm text-zinc-500">{t("wizard.features.noFeatsFound")}</p>
+        )}
         <ul className="flex flex-col gap-3">
-          {d.FEATS.map((feat) => {
+          {visibleFeats.map((feat) => {
             const ref = doc.feats.find((r) => d.parseFeatRef(r).featId === feat.id);
             const selected = Boolean(ref);
             const missing = selected

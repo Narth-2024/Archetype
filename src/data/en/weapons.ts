@@ -43,6 +43,12 @@ export const WEAPONS: WeaponDef[] = [
   { id: "cajado", name: "Staff", category: "simples", kind: "corpo", damage: "1d6", damageType: "bludgeoning", weight: 4, properties: ["Versatile (1d8)"], finesse: false },
   { id: "foiche", name: "Sickle", category: "simples", kind: "corpo", damage: "1d4", damageType: "slashing", weight: 2, properties: ["Light"], finesse: false },
   { id: "foice_longa", name: "Glaive", category: "marcial", kind: "corpo", damage: "1d10", damageType: "slashing", weight: 18, properties: ["Two-handed"], finesse: false, twoHanded: true },
+  { id: "macea", name: "Mace", category: "simples", kind: "corpo", damage: "1d6", damageType: "bludgeoning", weight: 4, properties: [], finesse: false },
+  { id: "alabarda", name: "Halberd", category: "marcial", kind: "corpo", damage: "1d10", damageType: "slashing", weight: 18, properties: ["Reach (10 ft)", "Two-handed"], finesse: false, twoHanded: true },
+  { id: "marreta", name: "Maul", category: "marcial", kind: "corpo", damage: "2d6", damageType: "bludgeoning", weight: 10, properties: ["Two-handed"], finesse: false, twoHanded: true },
+  { id: "estrela_do_alvorecer", name: "Morningstar", category: "marcial", kind: "corpo", damage: "1d8", damageType: "piercing", weight: 6, properties: [], finesse: false },
+  { id: "gravina", name: "Blowgun", category: "marcial", kind: "distancia", damage: "1", damageType: "piercing", weight: 1, properties: ["Ammunition", "Loading"], finesse: false, range: "25/100" },
+  { id: "rede", name: "Net", category: "marcial", kind: "distancia", damage: "—", damageType: "—", weight: 3, properties: ["Thrown (5/15)"], finesse: false, range: "5/15" },
 ];
 
 export function getWeapon(id: string): WeaponDef | undefined {

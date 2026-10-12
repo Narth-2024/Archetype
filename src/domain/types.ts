@@ -99,6 +99,7 @@ export type CharacterDoc = {
     languages: string[];
   };
   feats: string[];
+  specialPicks?: string[];
   inventory: InventoryItem[];
   attacks: Attack[];
   spellcasting: {

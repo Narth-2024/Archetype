@@ -9,6 +9,7 @@ import { abilityMod, abilityScore, racialBonus, raceAbility } from "@/domain/cal
 import {
   POINT_BUY_TOTAL,
   STANDARD_ARRAY,
+  abilityPriorityWeights,
   pointBuyCost,
   pointBuySpent,
   suggestAbilities,
@@ -61,8 +62,13 @@ export function StepAbilities() {
   }
 
   function applyArray() {
+    const weights = abilityPriorityWeights(doc, d);
+    const ordered = [...ABILITY_KEYS].sort(
+      (a, b) =>
+        weights[b] - weights[a] || ABILITY_KEYS.indexOf(a) - ABILITY_KEYS.indexOf(b),
+    );
     update((doc) => {
-      ABILITY_KEYS.forEach((k, i) => {
+      ordered.forEach((k, i) => {
         doc.abilities[k] = STANDARD_ARRAY[i];
       });
     });

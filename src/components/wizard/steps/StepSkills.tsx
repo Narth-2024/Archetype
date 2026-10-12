@@ -114,10 +114,16 @@ export function StepSkills() {
   const hasClasses = classEntries(doc).length > 0;
 
   const markedSkills = SKILL_KEYS.filter((k) => doc.skills[k]).length;
+  // Multiclass rule: the first class grants its full skill pool; each
+  // additional class grants only 2 skill proficiencies.
+  const poolTotal = pools.reduce(
+    (acc, p, i) => acc + (i === 0 ? p.count : Math.min(2, p.options.length)),
+    0,
+  );
   const maxSkills =
     (bg?.skillChoices.count ?? 0) +
     rPool.count +
-    pools.reduce((a, p) => a + p.count, 0) +
+    poolTotal +
     rSkills.length;
 
   const markedSaves = ABILITY_KEYS.filter((k) => doc.saves[k]);
@@ -260,7 +266,7 @@ export function StepSkills() {
           {t("wizard.skills.budgetHint", {
             bg: fmt.num(bg?.skillChoices.count ?? 0),
             race: fmt.num(rPool.count + rSkills.length),
-            classes: fmt.num(pools.reduce((a, p) => a + p.count, 0)),
+            classes: fmt.num(poolTotal),
             total: fmt.num(maxSkills),
           })}
         </p>

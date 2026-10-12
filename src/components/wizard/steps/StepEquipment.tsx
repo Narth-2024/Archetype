@@ -211,7 +211,7 @@ export function StepEquipment() {
             <option value="">{t("wizard.equipment.chooseWeapon")}</option>
             {d.WEAPONS.map((w) => (
               <option key={w.id} value={w.id}>
-                {w.name} ({w.damage} {w.damageType})
+                {w.name}
               </option>
             ))}
           </Select>

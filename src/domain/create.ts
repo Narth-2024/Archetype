@@ -35,6 +35,7 @@ export function newCharacterDoc(): CharacterDoc {
     skills: record(SKILL_KEYS, false) as Record<SkillId, boolean>,
     proficiencies: { armors: [], weapons: [], tools: [], languages: [] },
     feats: [],
+    specialPicks: [],
     inventory: [],
     attacks: [],
     spellcasting: { known: [], prepared: [], slotsUsed: {} },
