@@ -105,6 +105,58 @@ export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
   );
 }
 
+export function SearchSelect({
+  value,
+  onChange,
+  options,
+  placeholder,
+  searchPlaceholder,
+  emptyLabel,
+  className = "",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+  placeholder?: string;
+  searchPlaceholder?: string;
+  emptyLabel?: string;
+  className?: string;
+}) {
+  const [query, setQuery] = useState("");
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? options.filter((o) => o.label.toLowerCase().includes(q))
+    : options;
+  const current = options.find((o) => o.value === value);
+  const showCurrent = Boolean(current) && !filtered.some((o) => o.value === value);
+  return (
+    <div className={`flex flex-col gap-1 ${className}`}>
+      {searchPlaceholder !== undefined && (
+        <TextInput
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={searchPlaceholder}
+          aria-label={searchPlaceholder}
+        />
+      )}
+      <Select value={value} onChange={(e) => onChange(e.target.value)}>
+        {placeholder !== undefined && <option value="">{placeholder}</option>}
+        {showCurrent && current && (
+          <option value={current.value}>{current.label}</option>
+        )}
+        {filtered.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </Select>
+      {filtered.length === 0 && emptyLabel && (
+        <span className="text-xs text-zinc-600">{emptyLabel}</span>
+      )}
+    </div>
+  );
+}
+
 export function NumberInput({
   value,
   onChange,

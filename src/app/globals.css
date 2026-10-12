@@ -313,3 +313,30 @@ html.light .title-gold {
     transition-duration: 0.01ms !important;
   }
 }
+
+@media print {
+  nav,
+  header button,
+  header a,
+  [data-no-print] {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .rounded-lg,
+  .rounded-md,
+  .rounded-xl,
+  .rounded-2xl {
+    border-color: #d4d4d8 !important;
+    box-shadow: none !important;
+  }
+
+  main,
+  .page-plain {
+    padding: 0 !important;
+  }
+}

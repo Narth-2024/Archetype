@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import { useWizard } from "../context";
-import { Card, Field, NumberInput, Select, TextInput } from "@/components/ui";
+import {
+  Card,
+  Field,
+  NumberInput,
+  SearchSelect,
+  Select,
+  TextInput,
+} from "@/components/ui";
 import { useT, useData, useFormat } from "@/lib/i18n/client";
 import type { CharacterDoc } from "@/domain/types";
 import { abilityScore, classEntries, raceAbility, raceSkillPool } from "@/domain/calc";
@@ -194,14 +201,14 @@ export function StepIdentity() {
         label={t("wizard.identity.race")}
         hint={race ? speedHint(race.speed, race.darkvision) : undefined}
       >
-        <Select value={id.raceId} onChange={(e) => changeRace(e.target.value)}>
-          <option value="">{t("wizard.select")}</option>
-          {raceOptions.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.name}
-            </option>
-          ))}
-        </Select>
+        <SearchSelect
+          value={id.raceId}
+          onChange={changeRace}
+          options={raceOptions.map((r) => ({ value: r.id, label: r.name }))}
+          placeholder={t("wizard.select")}
+          searchPlaceholder={t("wizard.identity.searchRace")}
+          emptyLabel={t("wizard.noResults")}
+        />
       </Field>
 
       <Field
@@ -229,17 +236,14 @@ export function StepIdentity() {
       </Field>
 
       <Field label={t("wizard.identity.background")} hint={bg?.feature.name}>
-        <Select
+        <SearchSelect
           value={id.backgroundId}
-          onChange={(e) => changeBackground(e.target.value)}
-        >
-          <option value="">{t("wizard.select")}</option>
-          {d.BACKGROUNDS.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
-        </Select>
+          onChange={changeBackground}
+          options={d.BACKGROUNDS.map((b) => ({ value: b.id, label: b.name }))}
+          placeholder={t("wizard.select")}
+          searchPlaceholder={t("wizard.identity.searchBackground")}
+          emptyLabel={t("wizard.noResults")}
+        />
       </Field>
 
       <Field label={t("wizard.identity.alignment")}>
@@ -300,17 +304,14 @@ export function StepIdentity() {
                     label={t("wizard.identity.classN", { n: index + 1 })}
                     className="min-w-48 flex-1"
                   >
-                    <Select
+                    <SearchSelect
                       value={entry.classId}
-                      onChange={(e) => setClass(index, e.target.value)}
-                    >
-                      <option value="">{t("wizard.select")}</option>
-                      {d.CLASSES.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </Select>
+                      onChange={(v) => setClass(index, v)}
+                      options={d.CLASSES.map((c) => ({ value: c.id, label: c.name }))}
+                      placeholder={t("wizard.select")}
+                      searchPlaceholder={t("wizard.identity.searchClass")}
+                      emptyLabel={t("wizard.noResults")}
+                    />
                   </Field>
                   <Field label={t("wizard.level")} className="w-28">
                     <NumberInput

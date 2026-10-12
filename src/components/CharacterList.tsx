@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Badge } from "@/components/ui";
+import { useMemo, useState } from "react";
+import { Badge, TextInput } from "@/components/ui";
 import type { CharacterSummary } from "@/domain/types";
 import { useData, useFormat, useT } from "@/lib/i18n/client";
 
@@ -18,8 +18,34 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
   const [pending, setPending] = useState<string | null>(null);
   const [removed, setRemoved] = useState<string[]>([]);
   const [listError, setListError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
 
-  const visible = items.filter((item) => !removed.includes(item.id));
+  const q = query.trim().toLowerCase();
+  const visible = useMemo(() => {
+    const base = items.filter((item) => !removed.includes(item.id));
+    if (!q) return base;
+    return base.filter((item) => {
+      const race = d.getRace(item.raceId);
+      const cls = d.getClass(item.classId);
+      return (
+        item.name.toLowerCase().includes(q) ||
+        (race?.name.toLowerCase().includes(q) ?? false) ||
+        (cls?.name.toLowerCase().includes(q) ?? false)
+      );
+    });
+  }, [items, removed, q, d]);
+
+  function formatDate(iso: string) {
+    try {
+      return new Intl.DateTimeFormat(undefined, {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }).format(new Date(iso));
+    } catch {
+      return iso.slice(0, 10);
+    }
+  }
 
   async function handleCreate() {
     setCreating(true);
@@ -55,7 +81,7 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-zinc-400">
           {t(
             visible.length === 1 ? "pages.list.countOne" : "pages.list.countMany",
@@ -67,21 +93,34 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
             </span>
           )}
         </p>
-        <button
-          onClick={handleCreate}
-          disabled={creating}
-          className="btn-primary rounded-md px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-        >
-          {creating ? t("creating") : `+ ${t("create")}`}
-        </button>
+        <div className="flex items-center gap-3">
+          <TextInput
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("pages.list.search")}
+            aria-label={t("pages.list.search")}
+            className="w-56"
+          />
+          <button
+            onClick={handleCreate}
+            disabled={creating}
+            className="btn-primary rounded-md px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+          >
+            {creating ? t("creating") : `+ ${t("create")}`}
+          </button>
+        </div>
       </div>
 
       {visible.length === 0 ? (
         <div className="rounded-lg border border-dashed border-zinc-700 p-12 text-center">
-          <p className="text-zinc-400">{t("pages.list.emptyTitle")}</p>
-          <p className="mt-1 text-sm text-zinc-500">
-            {t("pages.list.emptyHint", { button: t("create") })}
+          <p className="text-zinc-400">
+            {q ? t("wizard.noResults") : t("pages.list.emptyTitle")}
           </p>
+          {!q && (
+            <p className="mt-1 text-sm text-zinc-500">
+              {t("pages.list.emptyHint", { button: t("create") })}
+            </p>
+          )}
         </div>
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2">
@@ -134,6 +173,11 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
                     <span className="block text-xs text-zinc-500">
                       {t("sheet.acAbbr")}: {fmt.num(item.ac)}
                     </span>
+                    {item.updatedAt && (
+                      <span className="block text-[11px] text-zinc-600">
+                        {t("pages.list.updated", { date: formatDate(item.updatedAt) })}
+                      </span>
+                    )}
                   </span>
                 </Link>
                 <div className="flex shrink-0 flex-col items-stretch gap-2">

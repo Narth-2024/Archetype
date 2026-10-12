@@ -6,6 +6,7 @@ import { UnitsSelect } from "@/components/UnitsSelect";
 import { PhotoAvatar } from "@/components/sheet/PhotoAvatar";
 import { LoreBox } from "@/components/sheet/LoreBox";
 import { NotesBox } from "@/components/sheet/NotesBox";
+import { SheetActions } from "@/components/sheet/SheetActions";
 import { ABILITY_KEYS, SKILL_KEYS } from "@/domain/types";
 import {
   allAbilitiesWithBreakdown,
@@ -123,6 +124,7 @@ export async function SheetView({
             <LangSelect />
             <ThemeToggle />
             <UnitsSelect />
+            <SheetActions doc={doc} characterId={characterId} />
             <Link
               href={`/character/${characterId}/edit`}
               className="rounded-md border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 transition hover:border-amber-600 hover:text-amber-400"
