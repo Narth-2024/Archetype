@@ -15,27 +15,30 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
   const fmt = useFormat();
   const [creating, setCreating] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
+  const [pending, setPending] = useState<string | null>(null);
   const [removed, setRemoved] = useState<string[]>([]);
-  const [deleteError, setDeleteError] = useState(false);
+  const [listError, setListError] = useState<string | null>(null);
 
   const visible = items.filter((item) => !removed.includes(item.id));
 
   async function handleCreate() {
     setCreating(true);
+    setListError(null);
     try {
       const res = await fetch("/api/characters", { method: "POST" });
+      if (!res.ok) throw new Error(`POST ${res.status}`);
       const { id } = await res.json();
       router.push(`/character/${id}/edit`);
-    } finally {
+    } catch {
+      setListError(t("pages.list.createFailed"));
       setCreating(false);
     }
   }
 
   async function handleDelete(id: string) {
     setConfirmId(null);
-    setDeleteError(false);
-    setPending(true);
+    setListError(null);
+    setPending(id);
     setRemoved((prev) => [...prev, id]);
     try {
       const res = await fetch(`/api/characters/${id}`, { method: "DELETE" });
@@ -44,9 +47,9 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
     } catch (e) {
       console.error(t("pages.list.deleteFailed"), e);
       setRemoved((prev) => prev.filter((r) => r !== id));
-      setDeleteError(true);
+      setListError(t("pages.list.deleteFailed"));
     } finally {
-      setPending(false);
+      setPending(null);
     }
   }
 
@@ -58,9 +61,9 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
             visible.length === 1 ? "pages.list.countOne" : "pages.list.countMany",
             { count: fmt.num(visible.length) },
           )}
-          {deleteError && (
-            <span className="ml-3 text-red-400">
-              {t("pages.list.deleteFailed")}
+          {listError && (
+            <span role="alert" className="ml-3 text-red-400">
+              {listError}
             </span>
           )}
         </p>
@@ -138,14 +141,14 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
                     <>
                       <button
                         onClick={() => handleDelete(item.id)}
-                        disabled={pending}
+                        disabled={pending === item.id}
                         className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-500 disabled:opacity-50"
                       >
-                        {pending ? t("pages.list.deleting") : t("common.confirmDelete")}
+                        {pending === item.id ? t("pages.list.deleting") : t("common.confirmDelete")}
                       </button>
                       <button
                         onClick={() => setConfirmId(null)}
-                        disabled={pending}
+                        disabled={pending === item.id}
                         className="rounded-lg border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-zinc-500"
                       >
                         {t("common.cancel")}
@@ -154,7 +157,7 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
                   ) : (
                     <button
                       onClick={() => setConfirmId(item.id)}
-                      disabled={pending}
+                      disabled={pending === item.id}
                       className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-500 disabled:opacity-50"
                     >
                       {t("common.delete")}

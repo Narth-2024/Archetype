@@ -28,8 +28,10 @@ const STEPS = [
   { key: "wizard.steps.review", short: "9", component: StepReview },
 ];
 
+export const REVIEW_STEP_INDEX = STEPS.length - 1;
+
 export function CharacterWizard() {
-  const { doc, update, saving, savedAt, error } = useWizard();
+  const { doc, update, saving, savedAt, error, saveNow } = useWizard();
   const t = useT();
   const fmt = useFormat();
   const [step, setStep] = useState(Math.min(doc.step, STEPS.length - 1));
@@ -71,10 +73,27 @@ export function CharacterWizard() {
           </h1>
         </div>
         <div className="flex items-center gap-3 text-xs text-zinc-500">
-          {error && <span className="text-red-400">{error}</span>}
-          {!error && saving && <span>{t("wizard.saving")}</span>}
+          {error && (
+            <>
+              <span className="text-red-400">{error}</span>
+              <button
+                type="button"
+                onClick={() => void saveNow()}
+                className="rounded-md border border-red-800 px-2 py-1 text-red-400 transition hover:bg-red-950/60"
+              >
+                {t("wizard.retry")}
+              </button>
+            </>
+          )}
+          {!error && saving && (
+            <span role="status" aria-live="polite">
+              {t("wizard.saving")}
+            </span>
+          )}
           {!error && !saving && savedAt && (
-            <span className="fade-in">✓ {t("wizard.saved")}</span>
+            <span className="fade-in" role="status" aria-live="polite">
+              ✓ {t("wizard.saved")}
+            </span>
           )}
           <LangSelect />
           <ThemeToggle />

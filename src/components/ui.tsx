@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { DerivedPart } from "@/domain/calc";
 
 export type CardAccent =
@@ -104,36 +105,62 @@ export function NumberInput({
   min = 0,
   max = 99,
   className = "",
+  decreaseLabel,
+  increaseLabel,
 }: {
   value: number;
   onChange: (v: number) => void;
   min?: number;
   max?: number;
   className?: string;
+  decreaseLabel?: string;
+  increaseLabel?: string;
 }) {
+  const [draft, setDraft] = useState(String(value));
+  const [lastValue, setLastValue] = useState(value);
+  if (value !== lastValue) {
+    setLastValue(value);
+    setDraft(String(value));
+  }
+
+  function commit(raw: string) {
+    const n = Number(raw);
+    if (raw.trim() === "" || Number.isNaN(n)) {
+      setDraft(String(value));
+      return;
+    }
+    const clamped = Math.min(max, Math.max(min, n));
+    setDraft(String(clamped));
+    if (clamped !== value) onChange(clamped);
+  }
+
   return (
     <div className={`flex items-center gap-1 ${className}`}>
       <button
         type="button"
         onClick={() => onChange(Math.max(min, value - 1))}
+        aria-label={decreaseLabel}
         className="h-8 w-8 rounded-md border border-zinc-700 text-zinc-300 transition hover:border-amber-600"
       >
         −
       </button>
       <input
         type="number"
-        value={value}
+        inputMode="numeric"
+        value={draft}
         min={min}
         max={max}
-        onChange={(e) => {
-          const n = Number(e.target.value);
-          if (!Number.isNaN(n)) onChange(Math.min(max, Math.max(min, n)));
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={(e) => commit(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") commit((e.target as HTMLInputElement).value);
         }}
         className="h-8 w-14 rounded-md border border-zinc-700 bg-zinc-900 text-center text-sm text-zinc-100 outline-none focus:border-amber-600"
       />
       <button
         type="button"
         onClick={() => onChange(Math.min(max, value + 1))}
+        aria-label={increaseLabel}
         className="h-8 w-8 rounded-md border border-zinc-700 text-zinc-300 transition hover:border-amber-600"
       >
         +

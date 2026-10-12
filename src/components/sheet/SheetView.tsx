@@ -5,6 +5,7 @@ import { LangSelect } from "@/components/LangSelect";
 import { UnitsSelect } from "@/components/UnitsSelect";
 import { PhotoAvatar } from "@/components/sheet/PhotoAvatar";
 import { LoreBox } from "@/components/sheet/LoreBox";
+import { NotesBox } from "@/components/sheet/NotesBox";
 import { ABILITY_KEYS, SKILL_KEYS } from "@/domain/types";
 import {
   allAbilitiesWithBreakdown,
@@ -588,11 +589,11 @@ export async function SheetView({
           className="md:col-span-2 xl:col-span-3"
         />
 
-        <Card title={t("sheet.notes")} className="md:col-span-2 xl:col-span-1">
-          <p className="whitespace-pre-wrap text-sm text-zinc-400">
-            {doc.notes || t("sheet.noNotes")}
-          </p>
-        </Card>
+        <NotesBox
+          id={characterId}
+          notes={doc.notes}
+          className="md:col-span-2 xl:col-span-1"
+        />
       </div>
     </div>
   );

@@ -98,6 +98,30 @@ export function WizardProvider({
     return () => clearTimeout(timer);
   }, [state.dirty, state.doc, saveNow]);
 
+  useEffect(() => {
+    function flush() {
+      if (stateRef.current.dirty) void saveNow();
+    }
+    window.addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") flush();
+    });
+    return () => {
+      window.removeEventListener("pagehide", flush);
+    };
+  }, [saveNow]);
+
+  useEffect(() => {
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      if (stateRef.current.dirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, []);
+
   const update = useCallback((apply: (doc: CharacterDoc) => void) => {
     dispatch({ type: "update", apply });
   }, []);

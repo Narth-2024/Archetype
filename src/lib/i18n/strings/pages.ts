@@ -38,6 +38,7 @@ export const pages: Dict = {
     "pages.list.countOne": "{count} personagem",
     "pages.list.countMany": "{count} personagens",
     "pages.list.deleteFailed": "Falha ao excluir. Tente de novo.",
+    "pages.list.createFailed": "Falha ao criar personagem. Tente novamente.",
     "pages.list.emptyTitle": "Nenhum personagem ainda.",
     "pages.list.emptyHint":
       "Clique em \"{button}\" para começar a criar sua ficha passo a passo.",
@@ -90,6 +91,7 @@ export const pages: Dict = {
     "pages.list.countOne": "{count} character",
     "pages.list.countMany": "{count} characters",
     "pages.list.deleteFailed": "Failed to delete. Try again.",
+    "pages.list.createFailed": "Failed to create character. Try again.",
     "pages.list.emptyTitle": "No characters yet.",
     "pages.list.emptyHint":
       "Click \"{button}\" to start building your sheet step by step.",
@@ -142,6 +144,7 @@ export const pages: Dict = {
     "pages.list.countOne": "{count} personaje",
     "pages.list.countMany": "{count} personajes",
     "pages.list.deleteFailed": "Error al eliminar. Inténtalo de nuevo.",
+    "pages.list.createFailed": "Error al crear el personaje. Inténtalo de nuevo.",
     "pages.list.emptyTitle": "Aún no hay personajes.",
     "pages.list.emptyHint":
       "Haz clic en \"{button}\" para empezar a crear tu ficha paso a paso.",

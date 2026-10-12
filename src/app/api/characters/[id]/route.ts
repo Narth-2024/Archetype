@@ -56,6 +56,8 @@ export async function PATCH(request: Request, { params }: Params) {
     combat?: { hpCurrent?: number; hpTemp?: number };
     photo?: string;
     lore?: string;
+    notes?: string;
+    spellcasting?: { slotsUsed?: Record<string, number> };
   } | null;
   const doc = await getCharacter(id, user.id);
   if (!doc || !patch) {
@@ -82,6 +84,15 @@ export async function PATCH(request: Request, { params }: Params) {
       return NextResponse.json({ error: t("api.invalidDoc") }, { status: 400 });
     }
     doc.lore = patch.lore;
+  }
+  if (typeof patch.notes === "string") {
+    if (patch.notes.length > 10000) {
+      return NextResponse.json({ error: t("api.invalidDoc") }, { status: 400 });
+    }
+    doc.notes = patch.notes;
+  }
+  if (patch.spellcasting?.slotsUsed) {
+    doc.spellcasting.slotsUsed = patch.spellcasting.slotsUsed;
   }
   await updateCharacter(id, user.id, doc);
   return NextResponse.json({ ok: true, combat: doc.combat });

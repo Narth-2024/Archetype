@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWizard } from "../context";
+import { REVIEW_STEP_INDEX } from "../CharacterWizard";
 import { Badge, Card } from "@/components/ui";
 import { useT, useData, useFormat } from "@/lib/i18n/client";
 import {
@@ -25,6 +27,8 @@ export function StepReview() {
   const d = useData();
   const fmt = useFormat();
   const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [finishError, setFinishError] = useState<string | null>(null);
   const entries = classEntries(doc);
   const race = d.getRace(doc.identity.raceId);
   const bg = d.getBackground(doc.identity.backgroundId);
@@ -38,15 +42,23 @@ export function StepReview() {
   const prepared = doc.spellcasting.prepared.length;
 
   async function finish() {
-    const blob = structuredClone(doc);
-    blob.complete = true;
-    blob.step = 8;
-    await fetch(`/api/characters/${characterId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(blob),
-    });
-    router.push(`/character/${characterId}`);
+    setBusy(true);
+    setFinishError(null);
+    try {
+      const blob = structuredClone(doc);
+      blob.complete = true;
+      blob.step = REVIEW_STEP_INDEX;
+      const res = await fetch(`/api/characters/${characterId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(blob),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      router.push(`/character/${characterId}`);
+    } catch {
+      setBusy(false);
+      setFinishError(t("wizard.saveFailedShort"));
+    }
   }
 
   return (
@@ -234,13 +246,22 @@ export function StepReview() {
 
       <Card title={t("wizard.review.nextSteps")}>
         <p className="text-sm text-zinc-400">{t("wizard.review.finishHint")}</p>
+        {finishError && (
+          <p
+            role="alert"
+            className="mt-3 rounded-md border border-red-900 bg-red-950/40 px-3 py-2 text-sm text-red-400"
+          >
+            {finishError}
+          </p>
+        )}
         <div className="mt-5 flex justify-center rounded-lg border border-emerald-800/60 bg-emerald-950/50 px-6 py-7">
           <button
             type="button"
             onClick={finish}
-            className="btn-success w-full rounded-lg px-8 py-3.5 text-base font-semibold text-white transition hover:-translate-y-0.5 sm:w-auto"
+            disabled={busy}
+            className="btn-success w-full rounded-lg px-8 py-3.5 text-base font-semibold text-white transition hover:-translate-y-0.5 disabled:opacity-60 sm:w-auto"
           >
-            {t("wizard.review.finish")} →
+            {busy ? t("wizard.saving") : `${t("wizard.review.finish")} →`}
           </button>
         </div>
       </Card>
