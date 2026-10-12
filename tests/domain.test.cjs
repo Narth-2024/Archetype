@@ -283,6 +283,17 @@ check("subclasses apontam para classes existentes",
 check("magias apontam para classes existentes",
   SPELLS.every((s) => s.classes.every((id) => CLASSES.some((c) => c.id === id))),
   SPELLS.filter((s) => !s.classes.every((id) => CLASSES.some((c) => c.id === id))).map((s) => s.id));
+// --- paridade de ids entre locales ---
+const { BUNDLES } = require(path + "/data/index.js");
+for (const loc of ["en", "es"]) {
+  const b = BUNDLES[loc];
+  for (const key of ["CLASSES", "SUBCLASSES", "SPELLS", "BACKGROUNDS", "FEATS"]) {
+    check(loc + ": " + key + " ids batem com pt",
+      JSON.stringify(b[key].map((x) => x.id).sort()) === JSON.stringify(eval(key).map((x) => x.id).sort()),
+      b[key].length + " vs " + eval(key).length);
+  }
+}
+
 const preA = classPrerequisite("artifice");
 const preB = classPrerequisite("cacador_de_sangue");
 check("pré-requisito multiclasse artifice (INT 13)", !!preA && JSON.stringify(preA.anyOf) === JSON.stringify(["int"]), preA);
