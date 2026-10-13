@@ -2,7 +2,7 @@ import type { AbilityKey, CharacterDoc } from "./types";
 import { ABILITY_KEYS } from "./types";
 import { PT_BUNDLE } from "../data";
 import type { DataBundle } from "../data";
-import { abilityMod, classEntries, raceAbility } from "./calc";
+import { abilityMod, backgroundSkills, classEntries, raceAbility, raceSkills } from "./calc";
 
 function fill(template: string, args: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (m, k: string) =>
@@ -22,6 +22,10 @@ export const POINT_COSTS: Record<number, number> = {
 };
 
 export const POINT_BUY_TOTAL = 27;
+
+/** Weight added per guaranteed skill proficiency (background/race) to the
+ *  ability that backs it — nudges the build to support its proficiencies. */
+const SKILL_PROF_WEIGHT = 0.2;
 
 export const STANDARD_ARRAY = [15, 14, 13, 12, 10, 8];
 
@@ -57,6 +61,17 @@ function weightsFor(c: CharacterDoc, d: DataBundle): Record<AbilityKey, number> 
     const priority = d.classAbilityPriority(e.classId);
     for (const key of priority.primary) weights[key] += (4 * share) / priority.primary.length;
     for (const key of priority.secondary) weights[key] += share / priority.secondary.length;
+  }
+  // Background/race grant guaranteed skill proficiencies — nudge the backing
+  // abilities up so the build supports them (small signal, never overrides
+  // class priority).
+  const granted = new Set<string>([
+    ...backgroundSkills(c, d),
+    ...raceSkills(c, d),
+  ]);
+  for (const skillId of granted) {
+    const skill = d.getSkill(skillId);
+    if (skill) weights[skill.ability] += SKILL_PROF_WEIGHT;
   }
   return weights;
 }
