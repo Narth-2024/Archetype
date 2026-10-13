@@ -38,6 +38,7 @@ export function StepSpells() {
   const fmt = useFormat();
   const [query, setQuery] = useState("");
   const [sourceFilter, setSourceFilter] = useState("all");
+  const [levelFilter, setLevelFilter] = useState("all");
 
   const casterClasses: ClassDef[] = [];
   for (const e of classEntries(doc)) {
@@ -90,6 +91,10 @@ export function StepSpells() {
   } else if (sourceFilter.startsWith("subclass:")) {
     const allowed = new Set(spellsForSubclass(sourceFilter.slice("subclass:".length)));
     catalog = catalog.filter((s) => allowed.has(s.id));
+  }
+  if (levelFilter !== "all") {
+    const lv = Number(levelFilter);
+    catalog = catalog.filter((s) => s.level === lv);
   }
   const q = query.trim().toLowerCase();
   if (q) {
@@ -283,6 +288,25 @@ export function StepSpells() {
               </select>
             </label>
           )}
+          <label
+            htmlFor="spell-level-filter"
+            className="flex flex-col gap-1 text-xs text-zinc-500"
+          >
+            {t("wizard.spells.levelFilterLabel")}
+            <select
+              id="spell-level-filter"
+              value={levelFilter}
+              onChange={(e) => setLevelFilter(e.target.value)}
+              className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-200"
+            >
+              <option value="all">{t("wizard.spells.levelFilterAll")}</option>
+              {LEVEL_KEYS.map((levelKey, lv) => (
+                <option key={lv} value={String(lv)}>
+                  {t(levelKey)}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
         {catalog.length === 0 && (
           <p className="mt-2 text-sm text-zinc-500">
@@ -306,32 +330,43 @@ export function StepSpells() {
             >
               <div className="grid gap-2 sm:grid-cols-2">
                 {spells.map((spell) => (
-                  <details
+                  <div
                     key={spell.id}
                     className="rounded-md border border-zinc-800"
                   >
-                    <summary className="cursor-pointer list-none">
-                      <Toggle
-                        checked={doc.spellcasting.known.includes(spell.id)}
-                        onChange={() => toggleKnown(spell.id)}
-                        label={t("wizard.spells.spellOption", {
-                          name: spell.name,
-                          time: spell.castingTime,
-                          range: fmt.distanceText(spell.range),
-                        })}
-                      />
-                    </summary>
-                    <div className="border-t border-zinc-800 px-3 py-2 text-xs text-zinc-400">
-                      <p className="mb-1.5 text-zinc-500">
-                        {spell.school}
-                        {spell.ritual ? ` · ${t("wizard.spells.ritual")}` : ""}
-                        {spell.concentration
-                          ? ` · ${t("wizard.spells.concentration")}`
-                          : ""}
-                      </p>
-                      <p>{spell.description}</p>
+                    <div className="flex items-stretch">
+                      <details className="min-w-0 flex-1">
+                        <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2">
+                          <span className="min-w-0 flex-1 truncate text-sm font-medium text-zinc-200">
+                            {spell.name}
+                          </span>
+                          <span className="shrink-0 text-xs text-zinc-500">
+                            {spell.castingTime} · {fmt.distanceText(spell.range)}
+                          </span>
+                          <span aria-hidden className="shrink-0 text-xs text-zinc-500">
+                            ▾
+                          </span>
+                        </summary>
+                        <div className="border-t border-zinc-800 px-3 py-2 text-xs text-zinc-400">
+                          <p className="mb-1.5 text-zinc-500">
+                            {spell.school}
+                            {spell.ritual ? ` · ${t("wizard.spells.ritual")}` : ""}
+                            {spell.concentration
+                              ? ` · ${t("wizard.spells.concentration")}`
+                              : ""}
+                          </p>
+                          <p>{spell.description}</p>
+                        </div>
+                      </details>
+                      <div className="flex w-36 shrink-0 items-center border-l border-zinc-800 px-2">
+                        <Toggle
+                          checked={doc.spellcasting.known.includes(spell.id)}
+                          onChange={() => toggleKnown(spell.id)}
+                          label={t("wizard.spells.knownToggle")}
+                        />
+                      </div>
                     </div>
-                  </details>
+                  </div>
                 ))}
               </div>
             </Card>

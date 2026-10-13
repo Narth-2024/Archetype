@@ -11,7 +11,7 @@ import {
   TextInput,
 } from "@/components/ui";
 import { useT, useData, useFormat } from "@/lib/i18n/client";
-import type { CharacterDoc } from "@/domain/types";
+import type { CharacterDoc, SkillId } from "@/domain/types";
 import { abilityScore, classEntries, raceAbility, raceSkillPool } from "@/domain/calc";
 import type { DataBundle } from "@/data";
 
@@ -81,29 +81,57 @@ export function StepIdentity() {
     return `${base} · ${t("wizard.identity.darkvision", { value: fmt.distance(darkvision) })}`;
   }
 
+  // Skills from background/race are auto-granted (deterministic first-N).
+  // When the source changes we must drop the old grants so they don't
+  // accumulate and push the character over the proficiency budget.
+  function backgroundGranted(backgroundId: string): SkillId[] {
+    const bg = d.getBackground(backgroundId);
+    return bg ? bg.skillChoices.options.slice(0, bg.skillChoices.count) : [];
+  }
+  function raceGranted(raceId: string, subraceId: string): SkillId[] {
+    const r = d.getRace(raceId);
+    const sub = d.getSubrace(subraceId);
+    return [...new Set<SkillId>([
+      ...(r?.proficiencies.skills ?? []),
+      ...(sub?.proficiencies?.skills ?? []),
+    ])];
+  }
+
   function changeRace(raceId: string) {
+    const prevRace = raceGranted(id.raceId, id.subraceId);
+    const keep = new Set([...raceGranted(raceId, ""), ...backgroundGranted(id.backgroundId)]);
     const next = d.getRace(raceId);
     update((doc) => {
       doc.identity.raceId = raceId;
       doc.identity.subraceId = "";
       doc.identity.raceBonusChoices = [];
+      for (const s of prevRace) if (!keep.has(s)) doc.skills[s] = false;
       for (const s of next?.proficiencies.skills ?? []) doc.skills[s] = true;
     });
   }
 
   function changeSubrace(subraceId: string) {
+    const prev = raceGranted(id.raceId, id.subraceId);
+    const keep = new Set([
+      ...raceGranted(id.raceId, subraceId),
+      ...backgroundGranted(id.backgroundId),
+    ]);
     const sub = d.getSubrace(subraceId);
     update((doc) => {
       doc.identity.subraceId = subraceId;
       doc.identity.raceBonusChoices = [];
+      for (const s of prev) if (!keep.has(s)) doc.skills[s] = false;
       for (const s of sub?.proficiencies?.skills ?? []) doc.skills[s] = true;
     });
   }
 
   function changeBackground(backgroundId: string) {
+    const prev = backgroundGranted(id.backgroundId);
+    const keep = new Set([...backgroundGranted(backgroundId), ...raceGranted(id.raceId, id.subraceId)]);
     const next = d.getBackground(backgroundId);
     update((doc) => {
       doc.identity.backgroundId = backgroundId;
+      for (const s of prev) if (!keep.has(s)) doc.skills[s] = false;
       if (next) {
         const granted = next.skillChoices.options.slice(0, next.skillChoices.count);
         for (const s of granted) doc.skills[s] = true;

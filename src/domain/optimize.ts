@@ -47,7 +47,7 @@ function weightsFor(c: CharacterDoc, d: DataBundle): Record<AbilityKey, number> 
     dex: 0.5,
     con: 1,
     int: 0,
-    wis: 0,
+    wis: 0.3,
     cha: 0,
   };
   const entries = classEntries(c);
@@ -135,19 +135,23 @@ function chooseFlex(
   weights: Record<AbilityKey, number>,
 ): { choices: AbilityKey[]; score: number } {
   const flexDef = flex;
+  const maxW = Math.max(...ABILITY_KEYS.map((k) => weights[k]));
+  const primaryKeys = new Set(
+    ABILITY_KEYS.filter((k) => weights[k] === maxW && maxW > 0),
+  );
   const scoreOf = (choices: AbilityKey[]) => {
     let weighted = 0;
-    let valueTerm = 0;
     let modSum = 0;
+    let primaryValue = 0;
     for (const key of ABILITY_KEYS) {
       const bonus = (fixed[key] ?? 0) + (choices.includes(key) ? flexDef?.amount ?? 0 : 0);
       const value = base[key] + bonus;
       const mod = abilityMod(value);
       weighted += weights[key] * mod;
-      valueTerm += weights[key] * value;
       modSum += mod;
+      if (primaryKeys.has(key)) primaryValue += value;
     }
-    return weighted + 0.01 * valueTerm + 0.001 * modSum;
+    return weighted + 0.001 * modSum + 0.005 * primaryValue;
   };
 
   if (!flexDef || flexDef.count === 0) return { choices: [], score: scoreOf([]) };
@@ -188,20 +192,28 @@ export function suggestAbilities(c: CharacterDoc, d: DataBundle = PT_BUNDLE): Su
 
   // Fast pre-rank without racial flex (scored inline in DFS, no intermediate
   // objects), then refine the top candidates with the full flex search.
+  // PRIMARY_COEF rewards the top-priority ability's raw score so it hits the
+  // point-buy max (15) while weighted+modSum keep the rest balanced (avoids
+  // dumping every non-priority stat to 8).
   const flexCount = flexible?.count ?? 0;
+  const maxW = Math.max(...ABILITY_KEYS.map((k) => weights[k]));
+  const primaryKeys = new Set(
+    ABILITY_KEYS.filter((k) => weights[k] === maxW && maxW > 0),
+  );
+  const PRIMARY_COEF = 0.005;
   const scoreOfBase = (values: number[]) => {
     let weighted = 0;
-    let valueTerm = 0;
     let modSum = 0;
+    let primaryValue = 0;
     for (let i = 0; i < ABILITY_KEYS.length; i++) {
       const key = ABILITY_KEYS[i];
       const value = values[i] + (fixed[key] ?? 0);
       const mod = abilityMod(value);
       weighted += weights[key] * mod;
-      valueTerm += weights[key] * value;
       modSum += mod;
+      if (primaryKeys.has(key)) primaryValue += value;
     }
-    return weighted + 0.01 * valueTerm + 0.001 * modSum;
+    return weighted + 0.001 * modSum + PRIMARY_COEF * primaryValue;
   };
 
   const K = 200;
@@ -226,9 +238,15 @@ export function suggestAbilities(c: CharacterDoc, d: DataBundle = PT_BUNDLE): Su
   } else {
     const values = POINT_BUY_VALUES;
     const cur: number[] = [];
-    const dfs = (index: number, spent: number, weighted: number, valueTerm: number, modSum: number) => {
+    const dfs = (
+      index: number,
+      spent: number,
+      weighted: number,
+      modSum: number,
+      primaryValue: number,
+    ) => {
       if (index === ABILITY_KEYS.length) {
-        considerTop(cur, weighted + 0.01 * valueTerm + 0.001 * modSum);
+        considerTop(cur, weighted + 0.001 * modSum + PRIMARY_COEF * primaryValue);
         return;
       }
       const key = ABILITY_KEYS[index];
@@ -242,8 +260,8 @@ export function suggestAbilities(c: CharacterDoc, d: DataBundle = PT_BUNDLE): Su
           index + 1,
           spent + cost,
           weighted + weights[key] * mod,
-          valueTerm + weights[key] * value,
           modSum + mod,
+          primaryValue + (primaryKeys.has(key) ? value : 0),
         );
         cur.pop();
       }
