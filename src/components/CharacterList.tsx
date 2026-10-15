@@ -3,10 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Badge, ConfirmDialog, TextInput, Toast } from "@/components/ui";
 import type { CharacterSummary } from "@/domain/types";
+import { parseImportedDoc } from "@/domain/import";
 import { useData, useFormat, useT } from "@/lib/i18n/client";
+
+const MAX_IMPORT_BYTES = 5_000_000;
 
 export function CharacterList({ items }: { items: CharacterSummary[] }) {
   const router = useRouter();
@@ -20,6 +23,8 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
   const [removed, setRemoved] = useState<string[]>([]);
   const [listError, setListError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [importing, setImporting] = useState(false);
+  const importInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!listError) return;
@@ -65,6 +70,39 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
     } catch {
       setListError(t("pages.list.createFailed"));
       setCreating(false);
+    }
+  }
+
+  async function handleImport(file: File) {
+    setImporting(true);
+    setListError(null);
+    try {
+      if (file.size > MAX_IMPORT_BYTES) throw new Error("too large");
+      const text = await file.text();
+      let raw: unknown;
+      try {
+        raw = JSON.parse(text);
+      } catch {
+        setListError(t("pages.list.importInvalid"));
+        return;
+      }
+      const doc = parseImportedDoc(raw);
+      if (!doc) {
+        setListError(t("pages.list.importInvalid"));
+        return;
+      }
+      const res = await fetch("/api/characters", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(doc),
+      });
+      if (!res.ok) throw new Error(`POST ${res.status}`);
+      const { id } = await res.json();
+      router.push(`/character/${id}`);
+    } catch {
+      setListError(t("pages.list.importFailed"));
+    } finally {
+      setImporting(false);
     }
   }
 
@@ -118,6 +156,27 @@ export function CharacterList({ items }: { items: CharacterSummary[] }) {
             aria-label={t("pages.list.search")}
             className="w-56"
           />
+          <input
+            ref={importInputRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            aria-label={t("pages.list.import")}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (file) void handleImport(file);
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => importInputRef.current?.click()}
+            disabled={importing}
+            title={t("pages.list.import")}
+            className="rounded-md border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition hover:border-amber-600 hover:text-amber-400 disabled:opacity-50"
+          >
+            {importing ? t("pages.list.importing") : `⬆ ${t("pages.list.import")}`}
+          </button>
           <button
             onClick={handleCreate}
             disabled={creating}

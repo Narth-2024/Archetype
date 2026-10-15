@@ -23,13 +23,6 @@ export type ClassDef = {
 
 export type ClassFeature = { level: number; name: string; description: string };
 
-const ALL_SKILLS: SkillId[] = [
-  "acrobatics", "animal_handling", "arcana", "athletics", "deception",
-  "history", "insight", "intimidation", "investigation", "medicine",
-  "nature", "perception", "performance", "persuasion", "religion",
-  "sleight_of_hand", "stealth", "survival",
-];
-
 export const CLASSES: ClassDef[] = [
   {
     id: "artifice",

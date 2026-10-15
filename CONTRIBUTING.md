@@ -24,7 +24,7 @@ All checks must pass:
 npm run typecheck    # tsc --noEmit
 npm run lint         # ESLint
 npm run build        # production build
-npm test             # rules-engine test suite (54 checks)
+npm test             # rules-engine test suite (129 checks)
 ```
 
 `npm test` compiles the pure domain layer (`src/domain/`) and runs the checks for AC, HP,

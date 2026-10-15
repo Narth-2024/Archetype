@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LangSelect } from "@/components/LangSelect";
-import { SpellBrowser } from "@/components/SpellBrowser";
+import { CompendiumTabs } from "@/components/CompendiumTabs";
 import { getI18n } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -60,8 +60,10 @@ export default async function CompendiumPage() {
         </div>
       </header>
 
-      <SpellBrowser
-        groups={bySchool}
+      <CompendiumTabs
+        spells={bySchool}
+        weapons={d.WEAPONS}
+        armors={d.ARMORS}
         classNames={classNames}
         locale={locale}
       />

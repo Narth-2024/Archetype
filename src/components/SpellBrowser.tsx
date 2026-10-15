@@ -19,7 +19,7 @@ type SpellLite = {
   classes: string[];
 };
 
-type SchoolGroup = {
+export type SchoolGroup = {
   school: { id: string; name: string; description: string; examples: string[] };
   spells: SpellLite[];
 };

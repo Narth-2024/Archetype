@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 3,
+  "step": 8,
+  "complete": true,
+  "identity": {
+    "name": "Aurora Testada",
+    "player": "e2e",
+    "raceId": "humano",
+    "subraceId": "",
+    "classes": [{ "classId": "mago", "level": 3 }],
+    "backgroundId": "acolite",
+    "alignment": "Leal e Bom",
+    "xp": 1200,
+    "raceBonusChoices": [],
+    "abilityMode": "pontos"
+  },
+  "abilities": { "str": 8, "dex": 14, "con": 14, "int": 15, "wis": 12, "cha": 10 },
+  "saves": {
+    "str": false,
+    "dex": false,
+    "con": false,
+    "int": true,
+    "wis": true,
+    "cha": false
+  },
+  "skills": {
+    "acrobatics": false,
+    "animal_handling": false,
+    "arcana": true,
+    "athletics": false,
+    "deception": false,
+    "history": true,
+    "insight": false,
+    "intimidation": false,
+    "investigation": true,
+    "medicine": false,
+    "nature": false,
+    "perception": true,
+    "performance": false,
+    "persuasion": false,
+    "religion": false,
+    "sleight_of_hand": false,
+    "stealth": false,
+    "survival": false
+  },
+  "proficiencies": {
+    "armors": [],
+    "weapons": ["simples"],
+    "tools": [],
+    "languages": ["comum", "élfico"]
+  },
+  "feats": [],
+  "specialPicks": [],
+  "inventory": [
+    {
+      "id": "i1",
+      "name": "Grimório",
+      "qty": 1,
+      "weight": 3,
+      "category": "outro",
+      "catalogId": null,
+      "equipped": true,
+      "description": ""
+    }
+  ],
+  "attacks": [
+    {
+      "id": "a1",
+      "name": "Bordão",
+      "kind": "arma",
+      "weaponId": "cajado",
+      "ability": "auto",
+      "magicBonus": 0,
+      "proficient": true,
+      "damageDice": "1d6",
+      "damageType": "contusão",
+      "range": "",
+      "properties": "",
+      "description": ""
+    }
+  ],
+  "spellcasting": { "known": [], "prepared": ["misseis_magicos"], "slotsUsed": {} },
+  "combat": { "hpCurrent": 22, "hpTemp": 0 },
+  "notes": "Ficha criada para o teste de importação.",
+  "photo": "",
+  "lore": "Personagem de teste importado de um arquivo JSON."
+}

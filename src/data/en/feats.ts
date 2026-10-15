@@ -26,10 +26,6 @@ export const ABILITY_PT: Record<AbilityKey, string> = {
   cha: "CHA",
 };
 
-const STR_DEX: AbilityKey[] = ["str", "dex"];
-const STR_CON: AbilityKey[] = ["str", "con"];
-const ALL_ABILITIES: AbilityKey[] = ["str", "dex", "con", "int", "wis", "cha"];
-
 export const FEATS: FeatDef[] = [
   {
     "id": "marca_draconica_aberrante",

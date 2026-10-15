@@ -20,13 +20,14 @@ your sheets ready for the table — in **English, Spanish, and Portuguese**.
   choice means instead of sending you back to the rulebook.
 - **Every value derived, nothing hard-coded** — ability modifiers, proficiency bonus, AC, HP,
   saves, attacks, spell slots, and spellcasting DC are computed at render time by a pure,
-  tested rules engine (`src/domain/calc.ts`, 75 unit checks). Change a level, race, or score and
+  tested rules engine (`src/domain/calc.ts`, 129 unit checks). Change a level, race, or score and
   everything recalculates instantly.
 - **Transparent formulas** — each derived value shows its own breakdown
   (e.g. `AC = 16 chain mail + 2 shield`).
 - **SRD content included** — 14 classes (including Artificer and Blood Hunter), 127 subclasses,
   62 races with 49 subraces (filterable by source book), 116 feats, 93 backgrounds, 30 weapons,
-  13 armors, and 524 spells (levels 0–9) with a public spell compendium grouped by school.
+  13 armors, and 524 spells (levels 0–9), all browsable in a public compendium — spells grouped
+  by school, plus weapons and armor.
 
 ## Features
 
@@ -47,7 +48,10 @@ your sheets ready for the table — in **English, Spanish, and Portuguese**.
   and traits (variant human, duergar, FToD dragonborn…), subclass features unlock by level,
   and feat prerequisites (ability, proficiency, spellcasting) are validated with clear warnings
   while ability-score and HP bonuses feed the calculations.
-- **214 SRD spells** with preparation, known spells, and combined spell slots.
+- **524 SRD spells** with preparation, known spells, and combined spell slots.
+- **JSON import/export** — download any sheet as JSON, or import a previously exported file to
+  recreate it as a new character (older v1/v2 documents are migrated automatically; malformed
+  files are rejected with a clear message).
 
 ### Digital sheet
 
@@ -99,7 +103,7 @@ npm run dev        # http://localhost:3000 — schema is created automatically
 | `npm run start`      | Serve the production build           |
 | `npm run lint`       | ESLint                               |
 | `npm run typecheck`  | `tsc --noEmit`                       |
-| `npm test`           | Rules-engine test suite (54 checks)  |
+| `npm test`           | Rules-engine test suite (129 checks) |
 | `npm run db:migrate` | Migrate local data to Turso          |
 
 ## Project structure
@@ -170,7 +174,7 @@ another account's sheets):
 | Method | Route                  | Description                                  |
 | ------ | ---------------------- | -------------------------------------------- |
 | GET    | `/api/characters`      | List the current user's sheets               |
-| POST   | `/api/characters`      | Create a character (accepts a document)      |
+| POST   | `/api/characters`      | Create a character (accepts a document; invalid documents → `400`) |
 | GET    | `/api/characters/:id`  | Full document                                |
 | PUT    | `/api/characters/:id`  | Save a full document                         |
 | PATCH  | `/api/characters/:id`  | Update HP, photo, or lore                    |
@@ -207,8 +211,6 @@ Without the Turso variables (local development), the app uses `data/dev.db`.
 ## Roadmap
 
 - Turn-tracked combat actions and conditions on the sheet
-- Character import/export (JSON)
-- Search and filters in the compendium
 
 ## Contributing
 

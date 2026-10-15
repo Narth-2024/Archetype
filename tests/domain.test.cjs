@@ -338,5 +338,87 @@ check("pré-requisito multiclasse cacador (INT 13 + FOR/DES 13)",
   !!preB && JSON.stringify(preB.allOf) === JSON.stringify(["int"]) &&
   JSON.stringify(preB.anyOf) === JSON.stringify(["str", "dex"]), preB);
 
+// --- importação de JSON ---
+const { parseImportedDoc } = require(path + "/domain/import.js");
+
+check("import: rejeita null", parseImportedDoc(null) === null);
+check("import: rejeita array", parseImportedDoc([]) === null);
+check("import: rejeita string", parseImportedDoc("{}") === null);
+check("import: rejeita objeto sem identity", parseImportedDoc({ schemaVersion: 3, abilities: {} }) === null);
+check("import: rejeita identity não-objeto", parseImportedDoc({ identity: "x" }) === null);
+check("import: rejeita objeto vazio", parseImportedDoc({}) === null);
+
+const exportedDoc = newCharacterDoc();
+exportedDoc.identity.name = "Herói Importado";
+exportedDoc.identity.raceId = "elfo";
+exportedDoc.identity.classes = [{ classId: "mago", level: 7, subclassId: "evocador" }];
+exportedDoc.abilities.int = 16;
+exportedDoc.skills.arcana = true;
+exportedDoc.combat.hpCurrent = 31;
+exportedDoc.inventory.push({
+  id: "i1", name: "Grimório", qty: 1, weight: 3,
+  category: "outro", catalogId: null, equipped: false, description: "",
+});
+const imported = parseImportedDoc(JSON.parse(JSON.stringify(exportedDoc)));
+check("import: roundtrip de um export válido",
+  imported !== null &&
+    imported.identity.name === "Herói Importado" &&
+    imported.identity.classes.length === 1 &&
+    imported.identity.classes[0].classId === "mago" &&
+    imported.identity.classes[0].subclassId === "evocador" &&
+    imported.abilities.int === 16 &&
+    imported.skills.arcana === true &&
+    imported.combat.hpCurrent === 31 &&
+    imported.inventory.length === 1,
+  imported && imported.identity);
+
+const legacyV1 = parseImportedDoc({
+  schemaVersion: 1,
+  identity: { name: "Velho", classId: "guerreiro", level: 4, raceId: "humano_variante" },
+  abilities: { str: 17 },
+  combat: { hpCurrent: 30 },
+});
+check("import: migra v1 (classId/level → classes[])",
+  legacyV1 !== null &&
+    legacyV1.schemaVersion === 3 &&
+    legacyV1.identity.classes[0].classId === "guerreiro" &&
+    legacyV1.identity.classes[0].level === 4,
+  legacyV1 && legacyV1.identity.classes);
+check("import: humano_variante vira raça humana",
+  legacyV1.identity.raceId === "humano" &&
+    legacyV1.identity.subraceId === "humano_variante",
+  { raceId: legacyV1.identity.raceId, subraceId: legacyV1.identity.subraceId });
+check("import: atributos ausentes viram 10",
+  legacyV1.abilities.dex === 10 && legacyV1.abilities.cha === 10,
+  legacyV1.abilities);
+check("import: atributo inválido não quebra", (() => {
+  const bad = parseImportedDoc({ identity: {}, abilities: { str: "x", dex: NaN } });
+  return bad !== null && bad.abilities.str === 10 && bad.abilities.dex === 10;
+})());
+check("import: defaults coerentes",
+  legacyV1.identity.abilityMode === "pontos" &&
+    legacyV1.feats.length === 0 &&
+    legacyV1.skills.perception === false &&
+    legacyV1.saves.str === false,
+  { mode: legacyV1.identity.abilityMode, feats: legacyV1.feats });
+
+const capped = parseImportedDoc({
+  identity: { name: "X", classes: [{ classId: "mago", level: 99 }] },
+  combat: { hpCurrent: -5, hpTemp: 999999 },
+  notes: "n".repeat(20000),
+  lore: "l".repeat(40000),
+  photo: "javascript:alert(1)",
+});
+check("import: níveis e PV limitados",
+  capped.identity.classes[0].level === 20 &&
+    capped.combat.hpCurrent === 0 &&
+    capped.combat.hpTemp === 9999,
+  { level: capped.identity.classes[0].level, hp: capped.combat });
+check("import: notes/lore limitados e photo inválida descartada",
+  capped.notes.length === 10000 &&
+    capped.lore.length === 30000 &&
+    capped.photo === "",
+  { notes: capped.notes.length, lore: capped.lore.length, photo: capped.photo });
+
 console.log(failures === 0 ? "\nTODOS OS TESTES PASSARAM" : `\n${failures} FALHAS`);
 process.exit(failures === 0 ? 0 : 1);
