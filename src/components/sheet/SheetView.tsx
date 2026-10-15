@@ -7,6 +7,7 @@ import { PhotoAvatar } from "@/components/sheet/PhotoAvatar";
 import { LoreBox } from "@/components/sheet/LoreBox";
 import { NotesBox } from "@/components/sheet/NotesBox";
 import { SheetActions } from "@/components/sheet/SheetActions";
+import { SpellSlotPips } from "@/components/sheet/SpellSlotPips";
 import { ABILITY_KEYS, SKILL_KEYS } from "@/domain/types";
 import {
   allAbilitiesWithBreakdown,
@@ -71,6 +72,12 @@ export async function SheetView({
   const castAbility = spellAbility(doc, d);
   const { groups, used } = spellSlots(doc, d);
   const spells = knownSpells(doc, d);
+  const spellsByLevel = [...spells]
+    .sort((a, b) => a.level - b.level || a.name.localeCompare(b.name))
+    .reduce<Record<number, typeof spells>>((acc, s) => {
+      (acc[s.level] ??= []).push(s);
+      return acc;
+    }, {});
   const pools = classSkillPools(doc, d);
   const classOptions = [...new Set(pools.flatMap((p) => p.options))];
   const bgSkills = backgroundSkills(doc, d);
@@ -373,26 +380,45 @@ export async function SheetView({
               {doc.attacks.map((atk) => {
                 const bonus = attackBonus(doc, atk, d);
                 const ability = resolveAttackAbility(doc, atk, d);
+                const damage = attackDamage(doc, atk, d);
                 return (
-                  <li key={atk.id} className="rounded-md border border-zinc-800 p-3">
+                  <li
+                    key={atk.id}
+                    className="rounded-md border border-zinc-800 p-3 transition-colors hover:border-zinc-700"
+                  >
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium text-zinc-200">
                         {atk.name || t("sheet.noName")}
                       </span>
-                      {atk.magicBonus > 0 && (
-                        <Badge color="green">+{fmt.num(atk.magicBonus)}</Badge>
-                      )}
+                      <div className="flex flex-wrap gap-1.5">
+                        {atk.magicBonus > 0 && (
+                          <Badge color="green">+{fmt.num(atk.magicBonus)}</Badge>
+                        )}
+                        {atk.range && (
+                          <Badge>{fmt.distanceRange(atk.range)}</Badge>
+                        )}
+                      </div>
                     </div>
-                    <p className="mt-1 text-sm text-zinc-400">
-                      <strong className="text-amber-400">{signed(bonus.value)}</strong>{" "}
-                      {t("sheet.toAttack")} ·{" "}
-                      <strong className="text-zinc-200">
-                        {attackDamage(doc, atk, d)}
-                      </strong>
-                    </p>
-                    <p className="mt-1 text-xs text-zinc-600">
+                    <div className="mt-2 flex flex-wrap items-stretch gap-2">
+                      <div className="flex min-w-[4.5rem] flex-col items-center rounded-md border border-amber-800/60 bg-amber-950/20 px-2.5 py-1">
+                        <span className="text-lg font-bold tabular-nums text-amber-400">
+                          {signed(bonus.value)}
+                        </span>
+                        <span className="text-[10px] uppercase tracking-wide text-zinc-500">
+                          {t("sheet.toAttack")}
+                        </span>
+                      </div>
+                      <div className="flex min-w-[4.5rem] flex-col items-center rounded-md border border-zinc-800 px-2.5 py-1">
+                        <span className="text-sm font-semibold tabular-nums text-zinc-200">
+                          {damage}
+                        </span>
+                        <span className="text-[10px] uppercase tracking-wide text-zinc-500">
+                          {t("sheet.damageLabel")}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="mt-1.5 text-xs text-zinc-600">
                       {d.ABILITY_ABBR[ability]} · {bonus.parts.map((p) => p.label).join(" + ")}
-                      {atk.range && ` · ${fmt.distanceRange(atk.range)}`}
                       {atk.properties && ` · ${atk.properties}`}
                     </p>
                   </li>
@@ -406,84 +432,95 @@ export async function SheetView({
           {!hasCaster ? (
             <p className="text-sm text-zinc-600">{t("sheet.noCaster")}</p>
           ) : (
-            <div className="flex flex-col gap-3">
-              <div className="flex gap-4 text-sm">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-4 self-start rounded-md border border-zinc-800 px-3 py-1.5 text-center">
                 {dc && (
-                  <div>
-                    <p className="text-xs text-zinc-500">{t("sheet.saveDc")}</p>
-                    <p className="text-lg font-bold text-zinc-100">
-                      {fmt.num(dc.value)}
-                    </p>
-                  </div>
+                  <>
+                    <div>
+                      <p className="text-[10px] uppercase text-zinc-500">
+                        {t("sheet.saveDc")}
+                      </p>
+                      <p className="text-xl font-bold text-zinc-100">
+                        {fmt.num(dc.value)}
+                      </p>
+                    </div>
+                    <div className="h-8 w-px bg-zinc-800" />
+                  </>
                 )}
                 {spellAtk && (
-                  <div>
-                    <p className="text-xs text-zinc-500">{t("sheet.spellAttack")}</p>
-                    <p className="text-lg font-bold text-amber-400">
-                      +{fmt.num(spellAtk.value)}
-                    </p>
-                  </div>
+                  <>
+                    <div>
+                      <p className="text-[10px] uppercase text-zinc-500">
+                        {t("sheet.spellAttack")}
+                      </p>
+                      <p className="text-xl font-bold text-amber-400">
+                        +{fmt.num(spellAtk.value)}
+                      </p>
+                    </div>
+                    <div className="h-8 w-px bg-zinc-800" />
+                  </>
                 )}
                 <div>
-                  <p className="text-xs text-zinc-500">{t("sheet.ability")}</p>
-                  <p className="text-lg font-bold text-zinc-100">
+                  <p className="text-[10px] uppercase text-zinc-500">
+                    {t("sheet.ability")}
+                  </p>
+                  <p className="text-xl font-bold text-zinc-100">
                     {castAbility ? d.ABILITY_ABBR[castAbility] : "—"}
                   </p>
                 </div>
               </div>
 
               {groups.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {groups.map((g) => {
-                    const key =
-                      g.source === "pact" ? `pacto${g.level}` : String(g.level);
-                    const u = used[key] ?? 0;
-                    return (
-                      <div
-                        key={key}
-                        className="rounded-md border border-zinc-800 px-2 py-1 text-center"
-                      >
-                        <p className="text-[10px] text-zinc-500">
-                          {g.source === "pact"
-                            ? t("sheet.spellLevelPact", { level: g.level })
-                            : t("sheet.spellLevel", { level: g.level })}
-                        </p>
-                        <p className="text-sm font-bold text-zinc-200">
-                          {fmt.num(Math.max(0, g.max - u))}/{fmt.num(g.max)}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
+                <SpellSlotPips characterId={characterId} groups={groups} used={used} />
               )}
 
               {spells.length === 0 ? (
                 <p className="text-sm text-zinc-600">{t("sheet.noSpellsChosen")}</p>
               ) : (
-                <ul className="flex flex-col gap-1.5">
-                  {spells.map((s) => (
-                    <li key={s.id} className="flex items-center gap-2 text-sm">
-                      <span
-                        className={
-                          doc.spellcasting.prepared.includes(s.id)
-                            ? "text-zinc-100"
-                            : "text-zinc-500"
-                        }
-                      >
-                        {doc.spellcasting.prepared.includes(s.id) ? "● " : "○ "}
-                        {s.name}
-                      </span>
-                      <Badge color="blue">
-                        {s.level === 0
+                <div className="flex flex-col gap-3">
+                  {Object.entries(spellsByLevel).map(([lv, list]) => (
+                    <div key={lv}>
+                      <p className="text-[10px] uppercase tracking-wide text-zinc-500">
+                        {Number(lv) === 0
                           ? t("sheet.cantrip")
-                          : t("sheet.spellLevel", { level: s.level })}
-                      </Badge>
-                      <span className="text-xs text-zinc-600">
-                        {d.getSpell(s.id)?.school}
-                      </span>
-                    </li>
+                          : t("sheet.spellLevel", { level: fmt.num(Number(lv)) })}
+                      </p>
+                      <ul className="mt-1 flex flex-col gap-1">
+                        {list.map((s) => {
+                          const prepared = doc.spellcasting.prepared.includes(s.id);
+                          const def = d.getSpell(s.id);
+                          return (
+                            <li
+                              key={s.id}
+                              className="flex items-center gap-2 rounded-md border border-zinc-800 px-2.5 py-1.5 text-sm transition-colors hover:border-zinc-700"
+                            >
+                              <span
+                                aria-hidden
+                                className={prepared ? "text-amber-400" : "text-zinc-600"}
+                              >
+                                {prepared ? "●" : "○"}
+                              </span>
+                              <span className={prepared ? "text-zinc-100" : "text-zinc-500"}>
+                                {s.name}
+                              </span>
+                              {def?.ritual && (
+                                <Badge color="blue">{t("wizard.spells.ritual")}</Badge>
+                              )}
+                              {def?.concentration && (
+                                <Badge color="amber">
+                                  {t("wizard.spells.concentration")}
+                                </Badge>
+                              )}
+                              <span className="ml-auto text-xs text-zinc-600">
+                                {def?.school}
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
                   ))}
-                </ul>
+                </div>
               )}
             </div>
           )}

@@ -169,6 +169,22 @@ export function StepSpells() {
                     <p className="my-1 text-xl font-bold text-zinc-100">
                       {fmt.num(Math.max(0, g.max - current))}/{fmt.num(g.max)}
                     </p>
+                    <div aria-hidden className="mb-1.5 flex flex-wrap justify-center gap-1">
+                      {Array.from({ length: g.max }, (_, i) => (
+                        <span
+                          key={i}
+                          className={`h-2 w-2 border ${
+                            g.source === "pact" ? "rounded-sm" : "rounded-full"
+                          } ${
+                            i < g.max - current
+                              ? g.source === "pact"
+                                ? "border-violet-500 bg-violet-500"
+                                : "border-amber-400 bg-amber-400"
+                              : "border-zinc-700 bg-transparent"
+                          }`}
+                        />
+                      ))}
+                    </div>
                     <NumberInput
                       value={current}
                       onChange={(n) => setUsed(key, n, g.max)}

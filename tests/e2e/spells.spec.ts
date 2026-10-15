@@ -92,3 +92,30 @@ test("spells: known toggle marks spell without expanding", async ({ page }) => {
   // Toggling known must NOT open the details
   await expect(firstDetails).toHaveJSProperty("open", false);
 });
+
+test("spells: sheet slot pips toggle and persist across reloads", async ({
+  page,
+}) => {
+  await registerFresh(page);
+  await page.getByRole("button", { name: "Novo personagem" }).click();
+  await page.waitForURL(/\/character\/.+\/edit/);
+
+  await page.getByPlaceholder("Ex: Thora Valdris").fill("E2E Slots");
+  await pickClass(page, "Mago");
+  await expect(page.getByText("Salvo")).toBeVisible();
+
+  const id = new URL(page.url()).pathname.split("/")[2];
+  await page.goto(`/character/${id}`);
+
+  // A level 1 wizard has two 1st-level slots
+  const pip = page.getByRole("button", { name: "Alternar slot de nível 1 1/2" });
+  await expect(pip).toBeVisible();
+  await expect(pip).toHaveClass(/bg-transparent/);
+  await pip.click();
+  await expect(pip).toHaveClass(/bg-amber-400/);
+
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "Alternar slot de nível 1 1/2" }),
+  ).toHaveClass(/bg-amber-400/);
+});

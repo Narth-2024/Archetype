@@ -98,19 +98,44 @@ export function StepAttacks() {
                     </Badge>
                   )}
                 </div>
-                <p className="mt-1 text-sm text-zinc-400">
-                  {t("wizard.attacks.attack")}{" "}
-                  <strong className="text-amber-400">
-                    {bonus.value >= 0 ? `+${bonus.value}` : bonus.value}
-                  </strong>{" "}
-                  · {t("wizard.attacks.damage")}{" "}
-                  <strong className="text-zinc-200">{damage}</strong>
-                  {atk.range &&
-                    ` · ${t("wizard.attacks.range", {
-                      value: fmt.distanceRange(atk.range),
-                    })}`}
-                  {weapon && ` · ${weapon.properties.join(", ")}`}
-                </p>
+                <div className="mt-2 flex flex-wrap items-stretch gap-2">
+                  <div className="flex min-w-[4.5rem] flex-col items-center rounded-md border border-amber-800/60 bg-amber-950/20 px-2.5 py-1">
+                    <span className="text-lg font-bold tabular-nums text-amber-400">
+                      {bonus.value >= 0 ? `+${bonus.value}` : bonus.value}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wide text-zinc-500">
+                      {t("wizard.attacks.attack")}
+                    </span>
+                  </div>
+                  <div className="flex min-w-[4.5rem] flex-col items-center rounded-md border border-zinc-800 px-2.5 py-1">
+                    <span className="text-sm font-semibold tabular-nums text-zinc-200">
+                      {damage}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wide text-zinc-500">
+                      {t("wizard.attacks.damage")}
+                    </span>
+                  </div>
+                  {atk.range && (
+                    <div className="flex flex-col justify-center rounded-md border border-zinc-800 px-3 py-1">
+                      <span className="text-sm tabular-nums text-zinc-200">
+                        {fmt.distanceRange(atk.range)}
+                      </span>
+                      <span className="text-[10px] uppercase tracking-wide text-zinc-500">
+                        {t("wizard.attacks.rangeField")}
+                      </span>
+                    </div>
+                  )}
+                  {weapon && weapon.properties.length > 0 && (
+                    <div className="flex flex-col justify-center rounded-md border border-zinc-800 px-3 py-1">
+                      <span className="text-sm text-zinc-200">
+                        {weapon.properties.join(", ")}
+                      </span>
+                      <span className="text-[10px] uppercase tracking-wide text-zinc-500">
+                        {t("wizard.attacks.properties")}
+                      </span>
+                    </div>
+                  )}
+                </div>
                 <p className="mt-1 text-xs text-zinc-600">
                   {bonus.parts
                     .map(
