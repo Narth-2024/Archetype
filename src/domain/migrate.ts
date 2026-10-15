@@ -34,6 +34,11 @@ export function migrateDoc(raw: unknown): CharacterDoc {
   doc.feats ??= [];
   doc.photo ??= "";
   doc.lore ??= "";
+  const combat = (doc.combat ??= {}) as Record<string, unknown>;
+  combat.hpCurrent ??= 0;
+  combat.hpTemp ??= 0;
+  combat.round ??= 0;
+  combat.conditions ??= [];
 
   return doc as unknown as CharacterDoc;
 }

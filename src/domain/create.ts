@@ -39,7 +39,7 @@ export function newCharacterDoc(): CharacterDoc {
     inventory: [],
     attacks: [],
     spellcasting: { known: [], prepared: [], slotsUsed: {} },
-    combat: { hpCurrent: 0, hpTemp: 0 },
+    combat: { hpCurrent: 0, hpTemp: 0, round: 0, conditions: [] },
     notes: "",
     photo: "",
     lore: "",

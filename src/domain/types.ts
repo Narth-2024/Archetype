@@ -1,3 +1,11 @@
+import type { ConditionKey } from "./conditions";
+
+export type CombatCondition = {
+  id: string;
+  key: ConditionKey;
+  rounds: number | null;
+};
+
 export const ABILITY_KEYS = ["str", "dex", "con", "int", "wis", "cha"] as const;
 export type AbilityKey = (typeof ABILITY_KEYS)[number];
 
@@ -110,6 +118,8 @@ export type CharacterDoc = {
   combat: {
     hpCurrent: number;
     hpTemp: number;
+    round: number;
+    conditions: CombatCondition[];
   };
   notes: string;
   photo?: string;

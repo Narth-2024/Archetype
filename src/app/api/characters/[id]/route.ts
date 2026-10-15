@@ -6,6 +6,7 @@ import {
 } from "@/lib/characters";
 import { readSessionUser } from "@/lib/auth";
 import { migrateDoc } from "@/domain/migrate";
+import { isConditionKey, type ConditionKey } from "@/domain/conditions";
 import type { CharacterDoc } from "@/domain/types";
 import { getI18n } from "@/lib/i18n/server";
 
@@ -53,7 +54,12 @@ export async function PATCH(request: Request, { params }: Params) {
   if (!user) return unauthorized();
   const { id } = await params;
   const patch = (await request.json().catch(() => null)) as {
-    combat?: { hpCurrent?: number; hpTemp?: number };
+    combat?: {
+      hpCurrent?: number;
+      hpTemp?: number;
+      round?: number;
+      conditions?: { id?: unknown; key?: unknown; rounds?: unknown }[];
+    };
     photo?: string;
     lore?: string;
     notes?: string;
@@ -68,6 +74,21 @@ export async function PATCH(request: Request, { params }: Params) {
       doc.combat.hpCurrent = patch.combat.hpCurrent;
     if (typeof patch.combat.hpTemp === "number")
       doc.combat.hpTemp = patch.combat.hpTemp;
+    if (typeof patch.combat.round === "number" && Number.isFinite(patch.combat.round))
+      doc.combat.round = Math.min(999, Math.max(0, Math.floor(patch.combat.round)));
+    if (Array.isArray(patch.combat.conditions))
+      doc.combat.conditions = patch.combat.conditions
+        .filter((c) => isConditionKey(c?.key))
+        .slice(0, 40)
+        .map((c) => ({
+          id:
+            (typeof c.id === "string" && c.id.slice(0, 64)) || crypto.randomUUID(),
+          key: c.key as ConditionKey,
+          rounds:
+            typeof c.rounds === "number" && c.rounds > 0
+              ? Math.min(99, Math.floor(c.rounds))
+              : null,
+        }));
   }
   if (typeof patch.photo === "string") {
     const valid =

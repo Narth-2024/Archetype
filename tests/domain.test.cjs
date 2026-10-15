@@ -430,5 +430,90 @@ check("import: notes/lore limitados e photo inválida descartada",
     capped.photo === "",
   { notes: capped.notes.length, lore: capped.lore.length, photo: capped.photo });
 
+// --- condições de combate e tracker ---
+const { CONDITION_KEYS, isConditionKey } = require(path + "/domain/conditions.js");
+check("conditions: 16 condições SRD e validação", CONDITION_KEYS.length === 16 && isConditionKey("envenenado") && !isConditionKey("voadora"));
+check("migrate: docs antigos ganham round e conditions",
+  (() => {
+    const m = migrateDoc({ schemaVersion: 3, identity: { name: "Old", classes: [] } });
+    return m.combat.round === 0 && Array.isArray(m.combat.conditions) && m.combat.conditions.length === 0;
+  })());
+check("import: condições preservadas e inválidas descartadas",
+  (() => {
+    const doc = parseImportedDoc({
+      identity: { name: "Cond" },
+      combat: {
+        round: 3,
+        conditions: [
+          { id: "a", key: "envenenado", rounds: 2 },
+          { id: "b", key: "voadora", rounds: 1 },
+          { id: "c", key: "concentracao", rounds: 0 },
+          { id: "d", key: "cego", rounds: -3 },
+        ],
+      },
+    });
+    if (!doc) return false;
+    const keys = doc.combat.conditions.map((c) => c.key);
+    return doc.combat.round === 3 &&
+      keys.length === 3 &&
+      keys.includes("envenenado") &&
+      !keys.includes("voadora") &&
+      doc.combat.conditions.find((c) => c.key === "concentracao").rounds === null &&
+      doc.combat.conditions.find((c) => c.key === "cego").rounds === null;
+  })());
+check("import: round limitado e id gerado quando ausente",
+  (() => {
+    const doc = parseImportedDoc({
+      identity: { name: "Cond2" },
+      combat: { round: 99999, conditions: [{ key: "caido" }] },
+    });
+    return doc.combat.round === 999 &&
+      doc.combat.conditions[0].id.length > 0 &&
+      doc.combat.conditions[0].rounds === null;
+  })());
+
+// --- rolagem de dados ---
+const { parseDamageExpression, rollAttack, rollDice, rollParsedDamage } = require(path + "/domain/dice.js");
+check("dice: parse 1d8+4", (() => {
+  const p = parseDamageExpression("1d8+4");
+  return p && p.mod === 4 && p.dice.length === 1 && p.dice[0].count === 1 && p.dice[0].sides === 8;
+})());
+check("dice: parse 2d6-1 com texto", (() => {
+  const p = parseDamageExpression("2d6-1 cortante");
+  return p && p.mod === -1 && p.dice[0].count === 2 && p.dice[0].sides === 6;
+})());
+check("dice: parse 1d6 + 1d4+2 (múltiplos dados)", (() => {
+  const p = parseDamageExpression("1d6 + 1d4+2");
+  return p && p.dice.length === 2 && p.mod === 2 &&
+    p.dice[0].count === 1 && p.dice[1].sides === 4;
+})());
+check("dice: contador de dado não vira modificador (1d8+2d6)", (() => {
+  const p = parseDamageExpression("1d8+2d6");
+  return p && p.mod === 0 && p.dice.length === 2 &&
+    p.dice[0].sides === 8 && p.dice[1].count === 2 && p.dice[1].sides === 6;
+})());
+check("dice: sem dados retorna null", parseDamageExpression("") === null && parseDamageExpression("—") === null);
+check("dice: rolagens dentro dos limites", (() => {
+  const r = rollDice(3, 6);
+  return r.rolls.length === 3 && r.total === r.rolls[0] + r.rolls[1] + r.rolls[2] &&
+    r.rolls.every((v) => v >= 1 && v <= 6);
+})());
+check("dice: ataque soma d20 + bônus e marca nat", (() => {
+  for (let i = 0; i < 50; i++) {
+    const r = rollAttack(5);
+    if (r.total !== r.d20 + 5) return false;
+    if (r.d20 < 1 || r.d20 > 20) return false;
+    if (r.d20 === 20 && r.nat !== "crit") return false;
+    if (r.d20 === 1 && r.nat !== "fumble") return false;
+    if (r.d20 !== 20 && r.d20 !== 1 && r.nat !== null) return false;
+  }
+  return true;
+})());
+check("dice: dano parsed soma os dados + modificador", (() => {
+  const p = parseDamageExpression("1d8+4");
+  const r = rollParsedDamage(p);
+  return r.total === r.rolls.reduce((a, b) => a + b, 0) + 4;
+})());
+
 console.log(failures === 0 ? "\nTODOS OS TESTES PASSARAM" : `\n${failures} FALHAS`);
 process.exit(failures === 0 ? 0 : 1);

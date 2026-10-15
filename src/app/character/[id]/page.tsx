@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { CombatQuickBar } from "@/components/sheet/CombatQuickBar";
+import { CombatTracker } from "@/components/sheet/CombatTracker";
 import { SheetView } from "@/components/sheet/SheetView";
 import {
   armorClass,
@@ -39,6 +40,13 @@ export default async function CharacterSheetPage({
         initiative={init.value}
         speed={speed(doc, d)}
       />
+      <div className="mb-6">
+        <CombatTracker
+          characterId={id}
+          round={doc.combat.round}
+          conditions={doc.combat.conditions}
+        />
+      </div>
       <SheetView doc={doc} characterId={id} />
     </main>
   );

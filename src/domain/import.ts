@@ -5,9 +5,11 @@ import type {
   AttackKind,
   CharacterDoc,
   ClassEntry,
+  CombatCondition,
   InventoryItem,
 } from "./types";
 import { ABILITY_KEYS, SKILL_KEYS } from "./types";
+import { isConditionKey, type ConditionKey } from "./conditions";
 
 const PHOTO_LIMIT = 700_000;
 const LORE_LIMIT = 30_000;
@@ -26,6 +28,22 @@ const ATTACK_ABILITIES: (AbilityKey | "auto")[] = [...ABILITY_KEYS, "auto"];
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+function normalizeConditions(raw: unknown): CombatCondition[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter(isRecord)
+    .filter((c) => isConditionKey(c.key))
+    .slice(0, 40)
+    .map((c) => ({
+      id: str(c.id).slice(0, 64) || crypto.randomUUID(),
+      key: c.key as ConditionKey,
+      rounds:
+        typeof c.rounds === "number" && c.rounds > 0
+          ? Math.min(99, Math.floor(c.rounds))
+          : null,
+    }));
 }
 
 function str(v: unknown, fallback = ""): string {
@@ -230,6 +248,8 @@ export function parseImportedDoc(raw: unknown): CharacterDoc | null {
     combat: {
       hpCurrent: int(combat.hpCurrent, 0, 0, 9999),
       hpTemp: int(combat.hpTemp, 0, 0, 9999),
+      round: int(combat.round, 0, 0, 999),
+      conditions: normalizeConditions(combat.conditions),
     },
     notes: str(raw.notes).slice(0, NOTES_LIMIT),
     photo: normalizePhoto(raw.photo),

@@ -65,7 +65,7 @@ export function CombatQuickBar({
     setBusy(true);
     try {
       await patch({
-        combat: { hpCurrent: hpMax, hpTemp: 0 },
+        combat: { hpCurrent: hpMax, hpTemp: 0, round: 0, conditions: [] },
         spellcasting: { slotsUsed: {} },
       });
       setConfirmRest(false);

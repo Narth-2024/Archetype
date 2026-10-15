@@ -8,6 +8,7 @@ import { LoreBox } from "@/components/sheet/LoreBox";
 import { NotesBox } from "@/components/sheet/NotesBox";
 import { SheetActions } from "@/components/sheet/SheetActions";
 import { SpellSlotPips } from "@/components/sheet/SpellSlotPips";
+import { DiceRoller } from "@/components/sheet/DiceRoller";
 import { ABILITY_KEYS, SKILL_KEYS } from "@/domain/types";
 import {
   allAbilitiesWithBreakdown,
@@ -416,6 +417,9 @@ export async function SheetView({
                           {t("sheet.damageLabel")}
                         </span>
                       </div>
+                      <div className="ml-auto self-center">
+                        <DiceRoller bonus={bonus.value} damageExpr={damage} />
+                      </div>
                     </div>
                     <p className="mt-1.5 text-xs text-zinc-600">
                       {d.ABILITY_ABBR[ability]} · {bonus.parts.map((p) => p.label).join(" + ")}
@@ -433,7 +437,8 @@ export async function SheetView({
             <p className="text-sm text-zinc-600">{t("sheet.noCaster")}</p>
           ) : (
             <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-4 self-start rounded-md border border-zinc-800 px-3 py-1.5 text-center">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-4 rounded-md border border-zinc-800 px-3 py-1.5 text-center">
                 {dc && (
                   <>
                     <div>
@@ -468,6 +473,10 @@ export async function SheetView({
                     {castAbility ? d.ABILITY_ABBR[castAbility] : "—"}
                   </p>
                 </div>
+                </div>
+                {spellAtk && (
+                  <DiceRoller bonus={spellAtk.value} damageExpr={null} />
+                )}
               </div>
 
               {groups.length > 0 && (

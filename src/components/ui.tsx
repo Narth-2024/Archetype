@@ -165,6 +165,7 @@ export function NumberInput({
   className = "",
   decreaseLabel,
   increaseLabel,
+  ariaLabel,
 }: {
   value: number;
   onChange: (v: number) => void;
@@ -173,6 +174,7 @@ export function NumberInput({
   className?: string;
   decreaseLabel?: string;
   increaseLabel?: string;
+  ariaLabel?: string;
 }) {
   const [draft, setDraft] = useState(String(value));
   const [lastValue, setLastValue] = useState(value);
@@ -208,6 +210,7 @@ export function NumberInput({
         value={draft}
         min={min}
         max={max}
+        aria-label={ariaLabel}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={(e) => commit(e.target.value)}
         onKeyDown={(e) => {
