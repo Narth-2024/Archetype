@@ -312,14 +312,24 @@ for (const loc of ["en", "es"]) {
 }
 
 // --- catálogo de armas e recursos especiais ---
-const { WEAPONS, ARMORS, getWeapon, getArmor, specialFeaturesFor, specialPicksLimit, spellsForSubclass, SUBCLASS_SPELLS } = require(path + "/data/index.js");
+const { WEAPONS, ARMORS, getWeapon, getArmor, GEAR, getGear, specialFeaturesFor, specialPicksLimit, spellsForSubclass, SUBCLASS_SPELLS } = require(path + "/data/index.js");
 check("armas SRD completas (36)", WEAPONS.length === 36, WEAPONS.length);
 check("armas novas presentes", ["macea", "alabarda", "marreta", "estrela_do_alvorecer", "gravina", "rede"].every((id) => getWeapon(id)));
 check("armaduras SRD completas (13 + escudo)", ARMORS.length === 13, ARMORS.map((a) => a.id));
-const GEAR_IDS = new Set(["arrows", "crossbow_bolts", "explorers_pack", "entertainers_pack", "scholars_pack", "thieves_pack", "thieves_tools", "lute", "holy_symbol", "druidic_focus", "component_pouch", "spellbook"]);
-const unresolved = CLASSES.flatMap((c) => c.startingEquipment.map((it) => it.catalogId))
-  .filter((id) => id && !GEAR_IDS.has(id) && !getWeapon(id) && !getArmor(id));
-check("catalogIds de equipamento inicial: armas/armaduras existem", unresolved.length === 0, unresolved);
+const GEAR_CATEGORIES = new Set(["foco", "mochila", "ferramenta", "instrumento", "municao", "geral"]);
+check("gear: ids únicos", new Set(GEAR.map((g) => g.id)).size === GEAR.length);
+check("gear: categorias válidas e peso não negativo",
+  GEAR.every((g) => GEAR_CATEGORIES.has(g.category) && g.weight >= 0 && typeof g.name === "string" && g.name.length > 0));
+check("gear: focos marcam o tipo de conjurador",
+  getGear("component_pouch").spellcaster === "universal" &&
+  getGear("arcane_focus").spellcaster === "arcano" &&
+  getGear("holy_symbol").spellcaster === "divino" &&
+  getGear("druidic_focus").spellcaster === "druidico");
+const classGearIds = CLASSES.flatMap((c) => c.startingEquipment.map((it) => it.catalogId));
+const bgGearIds = BACKGROUNDS.flatMap((b) => b.equipment.map((it) => it.catalogId));
+const unresolved = [...classGearIds, ...bgGearIds]
+  .filter((id) => id && !getWeapon(id) && !getArmor(id) && !getGear(id));
+check("catalogIds de equipamento inicial (classes + antecedentes) resolvem", unresolved.length === 0, unresolved);
 const meta = specialFeaturesFor("feiticeiro", 3);
 check("metamagia só para feiticeiro 3+", meta.length === 1 && meta[0].id === "metamagia", meta.map((m) => m.id));
 check("limite de metamagia por nível", specialPicksLimit(meta[0], 3) === 2 && specialPicksLimit(meta[0], 12) === 4);

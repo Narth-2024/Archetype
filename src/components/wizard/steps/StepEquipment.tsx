@@ -45,20 +45,23 @@ export function StepEquipment() {
       const armor = s.catalogId
         ? d.ARMORS.find((a) => a.id === s.catalogId)
         : undefined;
+      const gear = s.catalogId ? d.getGear(s.catalogId) : undefined;
       addItem({
         name: s.name,
         qty: s.qty,
-        weight: weapon?.weight ?? armor?.weight ?? null,
+        weight: weapon?.weight ?? armor?.weight ?? gear?.weight ?? null,
         category: weapon
           ? "arma"
           : armor?.category === "escudo"
             ? "escudo"
             : armor
               ? "armadura"
-              : "outro",
+              : gear && (gear.category === "ferramenta" || gear.category === "instrumento")
+                ? "ferramenta"
+                : "outro",
         catalogId: s.catalogId,
         equipped: false,
-        description: "",
+        description: gear?.description ?? "",
       });
     }
   }
@@ -92,7 +95,47 @@ export function StepEquipment() {
     }
   }
 
+  function addGearFromCatalog(catalogId: string) {
+    if (!catalogId) return;
+    const g = d.getGear(catalogId);
+    if (!g) return;
+    addItem({
+      name: g.name,
+      qty: 1,
+      weight: g.weight,
+      category:
+        g.category === "ferramenta" || g.category === "instrumento"
+          ? "ferramenta"
+          : "outro",
+      catalogId: g.id,
+      equipped: false,
+      description: g.description,
+    });
+  }
+
   const equippedCount = doc.inventory.filter((i) => i.equipped).length;
+  const gearCategories = [
+    "foco",
+    "mochila",
+    "ferramenta",
+    "instrumento",
+    "municao",
+    "geral",
+  ].filter((cat) => d.GEAR.some((g) => g.category === cat));
+  const gearCategoryLabel: Record<string, string> = {
+    foco: "pages.compendium.gearGroupFoco",
+    mochila: "pages.compendium.gearGroupMochila",
+    ferramenta: "pages.compendium.gearGroupFerramenta",
+    instrumento: "pages.compendium.gearGroupInstrumento",
+    municao: "pages.compendium.gearGroupMunicao",
+    geral: "pages.compendium.gearGroupGeral",
+  };
+  const hasCaster = classEntries(doc).some(
+    (e) => (d.getClass(e.classId)?.spellcaster ?? "none") !== "none",
+  );
+  const hasFocus = doc.inventory.some(
+    (i) => i.catalogId && d.getGear(i.catalogId)?.spellcaster,
+  );
 
   return (
     <div className="flex flex-col gap-5">
@@ -192,6 +235,11 @@ export function StepEquipment() {
                       })}
                     </span>
                   )}
+                  {item.description && (
+                    <span className="w-full text-xs leading-relaxed text-zinc-600">
+                      {item.description}
+                    </span>
+                  )}
                 </li>
               );
             })}
@@ -199,7 +247,7 @@ export function StepEquipment() {
         )}
       </Card>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <Card title={t("wizard.equipment.addWeaponTitle")}>
           <Select
             defaultValue=""
@@ -232,6 +280,32 @@ export function StepEquipment() {
               </option>
             ))}
           </Select>
+        </Card>
+
+        <Card title={t("wizard.equipment.addGearTitle")}>
+          <Select
+            defaultValue=""
+            onChange={(e) => {
+              addGearFromCatalog(e.target.value);
+              e.target.value = "";
+            }}
+          >
+            <option value="">{t("wizard.equipment.chooseGear")}</option>
+            {gearCategories.map((cat) => (
+              <optgroup key={cat} label={t(gearCategoryLabel[cat])}>
+                {d.GEAR.filter((g) => g.category === cat).map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </Select>
+          {hasCaster && !hasFocus && (
+            <p className="mt-2 text-xs leading-relaxed text-amber-500/90">
+              {t("wizard.equipment.casterHint")}
+            </p>
+          )}
         </Card>
       </div>
 

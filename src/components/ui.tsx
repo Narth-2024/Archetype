@@ -269,9 +269,11 @@ export function Toggle({
 export function Badge({
   children,
   color = "zinc",
+  title,
 }: {
   children: React.ReactNode;
   color?: "zinc" | "amber" | "green" | "blue";
+  title?: string;
 }) {
   const colors = {
     zinc: "border-zinc-700 text-zinc-400",
@@ -281,6 +283,7 @@ export function Badge({
   };
   return (
     <span
+      title={title}
       className={`inline-flex items-center rounded border px-2 py-0.5 text-xs ${colors[color]}`}
     >
       {children}

@@ -172,7 +172,7 @@ export const BACKGROUNDS: BackgroundDef[] = [
     ],
     "equipment": [
       {
-        "catalogId": "staff",
+        "catalogId": "cajado",
         "name": "Bastón de la tribu",
         "qty": 1
       },
@@ -429,7 +429,7 @@ export const BACKGROUNDS: BackgroundDef[] = [
     },
     "equipment": [
       {
-        "catalogId": "whip",
+        "catalogId": "chicote",
         "name": "Látigo",
         "qty": 1
       },
@@ -511,7 +511,7 @@ export const BACKGROUNDS: BackgroundDef[] = [
     "languages": [],
     "equipment": [
       {
-        "catalogId": "dagger",
+        "catalogId": "adaga",
         "name": "Daga",
         "qty": 2
       },
@@ -757,7 +757,7 @@ export const BACKGROUNDS: BackgroundDef[] = [
     "languages": [],
     "equipment": [
       {
-        "catalogId": "dagger",
+        "catalogId": "adaga",
         "name": "Daga",
         "qty": 1
       },
@@ -807,7 +807,7 @@ export const BACKGROUNDS: BackgroundDef[] = [
         "qty": 1
       },
       {
-        "catalogId": "dagger",
+        "catalogId": "adaga",
         "name": "Daga",
         "qty": 3
       },
@@ -887,7 +887,7 @@ export const BACKGROUNDS: BackgroundDef[] = [
     ],
     "equipment": [
       {
-        "catalogId": "dagger",
+        "catalogId": "adaga",
         "name": "Daga",
         "qty": 1
       },
@@ -1236,7 +1236,7 @@ export const BACKGROUNDS: BackgroundDef[] = [
         "qty": 1
       },
       {
-        "catalogId": "net",
+        "catalogId": "rede",
         "name": "Red",
         "qty": 1
       },
@@ -2354,7 +2354,7 @@ export const BACKGROUNDS: BackgroundDef[] = [
     "languages": [],
     "equipment": [
       {
-        "catalogId": "dagger",
+        "catalogId": "adaga",
         "name": "Daga de un compañero caído",
         "qty": 1
       },
@@ -2562,7 +2562,7 @@ export const BACKGROUNDS: BackgroundDef[] = [
     },
     "equipment": [
       {
-        "catalogId": "staff",
+        "catalogId": "cajado",
         "name": "Bastón",
         "qty": 1
       },

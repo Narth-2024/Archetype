@@ -25,6 +25,8 @@ export type { BackgroundDef } from "./backgrounds";
 export { SPECIAL_FEATURES, specialFeaturesFor, specialPicksLimit } from "./specials";
 export type { SpecialFeatureDef, SpecialFeatureItem } from "./specials";
 export { WEAPONS, getWeapon } from "./weapons";
+export { GEAR, getGear } from "./gear";
+export type { GearDef, GearCategory, GearCaster } from "./gear";
 export type { WeaponDef } from "./weapons";
 export { ARMORS, getArmor } from "./armors";
 export type { ArmorDef } from "./armors";

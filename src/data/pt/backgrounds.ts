@@ -56,7 +56,7 @@ export const BACKGROUNDS: BackgroundDef[] = [
     skillChoices: {count: 2, options: ["nature", "arcana", "survival"]},
     toolProficiencies: ["kit de herborista"],
     languages: ["Primordial"],
-    equipment: [{catalogId: "staff", name: "Cajado da tribo", qty: 1}, {catalogId: null, name: "Kit de herborista", qty: 1}, {catalogId: null, name: "10 po", qty: 1}],
+    equipment: [{catalogId: "cajado", name: "Cajado da tribo", qty: 1}, {catalogId: null, name: "Kit de herborista", qty: 1}, {catalogId: null, name: "10 po", qty: 1}],
     feature: {name: "Harmonia Elemental", description: "Como ação, canaliza magia menor do elemento de sua ordem: acender ou apagar chamas, criar rocha, água ou uma rajada de vento."},
   },
   {
@@ -123,7 +123,7 @@ export const BACKGROUNDS: BackgroundDef[] = [
     toolProficiencies: ["veículos terrestres"],
     languages: [],
     languageChoices: {count: 1},
-    equipment: [{catalogId: "whip", name: "Chicote", qty: 1}, {catalogId: "tent", name: "Barraca", qty: 1}, {catalogId: null, name: "Mapa regional", qty: 1}, {catalogId: null, name: "10 po", qty: 1}],
+    equipment: [{catalogId: "chicote", name: "Chicote", qty: 1}, {catalogId: "tent", name: "Barraca", qty: 1}, {catalogId: null, name: "Mapa regional", qty: 1}, {catalogId: null, name: "10 po", qty: 1}],
     feature: {name: "Mestre de Caravana", description: "Em caravanas atrai dois trabalhadores leais, identifica locais de acampamento defensáveis e sempre sabe os pontos cardeais."},
   },
   {
@@ -222,7 +222,7 @@ export const BACKGROUNDS: BackgroundDef[] = [
     toolProficiencies: ["disfarces"],
     languages: [],
     languageChoices: {count: 1},
-    equipment: [{catalogId: "insignia", name: "Insígnia Dimir", qty: 1}, {catalogId: "dagger", name: "Adaga", qty: 3}, {catalogId: null, name: "Roupas escuras", qty: 1}],
+    equipment: [{catalogId: "insignia", name: "Insígnia Dimir", qty: 1}, {catalogId: "adaga", name: "Adaga", qty: 3}, {catalogId: null, name: "Roupas escuras", qty: 1}],
     feature: {name: "Identidade Falsa", description: "Identidade de membro de outra guilda, com documentos e contatos, descartável para se misturar ao povo sem guilda."},
   },
   {
@@ -244,7 +244,7 @@ export const BACKGROUNDS: BackgroundDef[] = [
     toolProficiencies: [],
     toolChoices: {count: 1},
     languages: ["Dracônico"],
-    equipment: [{catalogId: "dagger", name: "Adaga", qty: 1}, {catalogId: null, name: "Roupas esfarrapadas", qty: 1}, {catalogId: null, name: "Escama arrancada de Vorgansharax", qty: 1}, {catalogId: null, name: "5 po", qty: 1}],
+    equipment: [{catalogId: "adaga", name: "Adaga", qty: 1}, {catalogId: null, name: "Roupas esfarrapadas", qty: 1}, {catalogId: null, name: "Escama arrancada de Vorgansharax", qty: 1}, {catalogId: null, name: "5 po", qty: 1}],
     feature: {name: "Marcado pelo Dragão", description: "Sobrevivente deformado pelas torturas de Vorgansharax; a notoriedade abre portas, mas dificulta esconder a aparência."},
   },
   {
@@ -334,7 +334,7 @@ export const BACKGROUNDS: BackgroundDef[] = [
     toolProficiencies: [],
     languages: [],
     languageChoices: {count: 1},
-    equipment: [{catalogId: "fishing_tackle", name: "Equipamento de pesca", qty: 1}, {catalogId: "net", name: "Rede", qty: 1}, {catalogId: null, name: "Isca favorita", qty: 1}, {catalogId: null, name: "10 po", qty: 1}],
+    equipment: [{catalogId: "fishing_tackle", name: "Equipamento de pesca", qty: 1}, {catalogId: "rede", name: "Rede", qty: 1}, {catalogId: null, name: "Isca favorita", qty: 1}, {catalogId: null, name: "10 po", qty: 1}],
     feature: {name: "Colheita das Águas", description: "Vantagem em testes com equipamento de pesca; mantém padrão de vida modesto e alimenta até dez pessoas por dia."},
   },
   {
@@ -622,7 +622,7 @@ export const BACKGROUNDS: BackgroundDef[] = [
     skillChoices: {count: 2, options: ["athletics", "survival"]},
     toolProficiencies: ["veículos terrestres", "veículos aquáticos"],
     languages: [],
-    equipment: [{catalogId: "dagger", name: "Adaga de um camarada caído", qty: 1}, {catalogId: null, name: "Pano com o símbolo do navio", qty: 1}, {catalogId: null, name: "Roupas de viajante", qty: 1}, {catalogId: null, name: "10 po", qty: 1}],
+    equipment: [{catalogId: "adaga", name: "Adaga de um camarada caído", qty: 1}, {catalogId: null, name: "Pano com o símbolo do navio", qty: 1}, {catalogId: null, name: "Roupas de viajante", qty: 1}, {catalogId: null, name: "10 po", qty: 1}],
     feature: {name: "Estabilidade", description: "Pode percorrer até 16 horas por dia antes de sofrer marcha forçada e acha sozinho uma rota segura para encalhar um barco na praia."},
   },
   {
@@ -679,7 +679,7 @@ export const BACKGROUNDS: BackgroundDef[] = [
     toolChoices: {count: 1},
     languages: [],
     languageChoices: {count: 1},
-    equipment: [{catalogId: "staff", name: "Cajado", qty: 1}, {catalogId: null, name: "Armadilha de caça", qty: 1}, {catalogId: null, name: "Troféu de animal", qty: 1}, {catalogId: null, name: "Roupas de viajante", qty: 1}, {catalogId: null, name: "10 po", qty: 1}],
+    equipment: [{catalogId: "cajado", name: "Cajado", qty: 1}, {catalogId: null, name: "Armadilha de caça", qty: 1}, {catalogId: null, name: "Troféu de animal", qty: 1}, {catalogId: null, name: "Roupas de viajante", qty: 1}, {catalogId: null, name: "10 po", qty: 1}],
     feature: {name: "Errante", description: "Memória excelente para mapas e geografia, e encontra comida e água fresca para você e mais cinco pessoas por dia, se houver no local."},
   },
   {

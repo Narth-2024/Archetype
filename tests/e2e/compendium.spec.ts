@@ -18,6 +18,16 @@ test("compendium renders in EN when the locale cookie says so", async ({
   await expect(page.getByText("Fireball", { exact: true })).toBeVisible();
 });
 
+test("compendium gear tab lists adventuring gear in PT", async ({ page }) => {
+  await page.goto("/compendium");
+  await page.getByRole("tab", { name: "Equipamento" }).click();
+  await expect(page.getByRole("heading", { name: "Focos e grimórios" })).toBeVisible();
+  await expect(page.getByText("Saco de componentes", { exact: true })).toBeVisible();
+  await page.getByPlaceholder("Buscar equipamento...").fill("mochila");
+  await expect(page.getByText("Mochila do explorador", { exact: true })).toBeVisible();
+  await expect(page.getByText("Saco de componentes", { exact: true })).toHaveCount(0);
+});
+
 test("compendium tabs browse weapons and armor in PT", async ({ page }) => {
   await page.goto("/compendium");
   await expect(page.getByRole("tab", { name: "Magias" })).toHaveAttribute(

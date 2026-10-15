@@ -340,7 +340,7 @@ export async function SheetView({
                     doc.inventory
                       .filter((i) => i.equipped)
                       .map((i) => (
-                        <Badge key={i.id} color="green">
+                        <Badge key={i.id} color="green" title={i.description || undefined}>
                           {i.qty > 1 ? `${fmt.num(i.qty)}× ` : ""}
                           {i.name}
                         </Badge>
@@ -352,7 +352,7 @@ export async function SheetView({
                 {doc.inventory
                   .filter((i) => !i.equipped)
                   .map((i) => (
-                    <Badge key={i.id}>
+                    <Badge key={i.id} title={i.description || undefined}>
                       {i.qty > 1 ? `${fmt.num(i.qty)}× ` : ""}
                       {i.name}
                     </Badge>

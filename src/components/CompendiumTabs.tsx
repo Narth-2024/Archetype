@@ -1,30 +1,33 @@
 "use client";
 
 import { useState } from "react";
-import type { ArmorDef, WeaponDef } from "@/data";
+import type { ArmorDef, GearDef, WeaponDef } from "@/data";
 import { GearBrowser } from "./GearBrowser";
 import { SpellBrowser, type SchoolGroup } from "./SpellBrowser";
 import { useT } from "@/lib/i18n/client";
 
-const TABS = ["spells", "weapons", "armors"] as const;
+const TABS = ["spells", "weapons", "armors", "gear"] as const;
 type Tab = (typeof TABS)[number];
 
 const TAB_LABEL: Record<Tab, string> = {
   spells: "pages.compendium.tabSpells",
   weapons: "pages.compendium.tabWeapons",
   armors: "pages.compendium.tabArmors",
+  gear: "pages.compendium.tabGear",
 };
 
 export function CompendiumTabs({
   spells,
   weapons,
   armors,
+  gear,
   classNames,
   locale,
 }: {
   spells: SchoolGroup[];
   weapons: WeaponDef[];
   armors: ArmorDef[];
+  gear: GearDef[];
   classNames: Record<string, string>;
   locale: string;
 }) {
@@ -61,6 +64,7 @@ export function CompendiumTabs({
         )}
         {tab === "weapons" && <GearBrowser kind="weapons" items={weapons} />}
         {tab === "armors" && <GearBrowser kind="armors" items={armors} />}
+        {tab === "gear" && <GearBrowser kind="gear" items={gear} />}
       </div>
     </div>
   );

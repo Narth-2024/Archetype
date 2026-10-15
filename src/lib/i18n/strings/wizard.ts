@@ -168,6 +168,10 @@ export const wizard: Dict = {
     "wizard.equipment.chooseWeapon": "Escolha uma arma...",
     "wizard.equipment.addArmorTitle": "Adicionar armadura/escudo do catálogo",
     "wizard.equipment.chooseArmor": "Escolha uma armadura...",
+    "wizard.equipment.addGearTitle": "Adicionar equipamento do catálogo",
+    "wizard.equipment.chooseGear": "Escolha um equipamento...",
+    "wizard.equipment.casterHint":
+      "Seu conjurador lança magias: adicione um foco arcano/divino, um saco de componentes ou um grimório ao inventário.",
     "wizard.equipment.customTitle": "Adicionar item personalizado",
     "wizard.equipment.namePlaceholder": "Ex: Corda de 15 metros",
     "wizard.equipment.category": "Categoria",
@@ -462,6 +466,10 @@ export const wizard: Dict = {
     "wizard.equipment.chooseWeapon": "Choose a weapon...",
     "wizard.equipment.addArmorTitle": "Add armor/shield from the catalog",
     "wizard.equipment.chooseArmor": "Choose an armor...",
+    "wizard.equipment.addGearTitle": "Add gear from the catalog",
+    "wizard.equipment.chooseGear": "Choose gear...",
+    "wizard.equipment.casterHint":
+      "Your character casts spells: add an arcane or divine focus, a component pouch, or a spellbook to the inventory.",
     "wizard.equipment.customTitle": "Add custom item",
     "wizard.equipment.namePlaceholder": "e.g.: 50-foot rope",
     "wizard.equipment.category": "Category",
@@ -756,6 +764,10 @@ export const wizard: Dict = {
     "wizard.equipment.chooseWeapon": "Elige un arma...",
     "wizard.equipment.addArmorTitle": "Añadir armadura/escudo del catálogo",
     "wizard.equipment.chooseArmor": "Elige una armadura...",
+    "wizard.equipment.addGearTitle": "Añadir equipo del catálogo",
+    "wizard.equipment.chooseGear": "Elige un objeto...",
+    "wizard.equipment.casterHint":
+      "Tu personaje lanza conjuros: añade un enfoque arcano o divino, una bolsa de componentes o un grimorio al inventario.",
     "wizard.equipment.customTitle": "Añadir objeto personalizado",
     "wizard.equipment.namePlaceholder": "Ej.: Cuerda de 15 metros",
     "wizard.equipment.category": "Categoría",

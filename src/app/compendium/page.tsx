@@ -64,6 +64,7 @@ export default async function CompendiumPage() {
         spells={bySchool}
         weapons={d.WEAPONS}
         armors={d.ARMORS}
+        gear={d.GEAR}
         classNames={classNames}
         locale={locale}
       />
