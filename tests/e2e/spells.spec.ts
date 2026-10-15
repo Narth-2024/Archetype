@@ -22,7 +22,7 @@ test("spells: search filter narrows catalog and descriptions expand", async ({
 
   // Jump to spells step (index 7)
   await page.getByRole("tab", { name: "Magias" }).click();
-  await expect(page).toHaveURL(/step=7/);
+  await expect(page).toHaveURL(/step=5/);
 
   // The spell catalog renders one <details> per spell
   const before = await page.locator("details").count();
@@ -74,7 +74,7 @@ test("spells: known toggle marks spell without expanding", async ({ page }) => {
   await page.getByPlaceholder("Ex: Thora Valdris").fill("E2E Toggle");
   await pickClass(page, "Mago");
   await page.getByRole("tab", { name: "Magias" }).click();
-  await expect(page).toHaveURL(/step=7/);
+  await expect(page).toHaveURL(/step=5/);
 
   const firstDetails = page.locator("details").first();
   // The known toggle sits beside the summary (outside <details>)

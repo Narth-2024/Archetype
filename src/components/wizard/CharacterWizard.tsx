@@ -11,9 +11,9 @@ import { StepAbilities } from "./steps/StepAbilities";
 import { StepFeatures } from "./steps/StepFeatures";
 import { StepSkills } from "./steps/StepSkills";
 import { StepEquipment } from "./steps/StepEquipment";
-import { StepCombat } from "./steps/StepCombat";
-import { StepAttacks } from "./steps/StepAttacks";
 import { StepSpells } from "./steps/StepSpells";
+import { StepAttacks } from "./steps/StepAttacks";
+import { StepCombat } from "./steps/StepCombat";
 import { StepReview } from "./steps/StepReview";
 
 const STEPS = [
@@ -22,9 +22,9 @@ const STEPS = [
   { key: "wizard.steps.features", short: "3", component: StepFeatures },
   { key: "wizard.steps.skills", short: "4", component: StepSkills },
   { key: "wizard.steps.equipment", short: "5", component: StepEquipment },
-  { key: "wizard.steps.combat", short: "6", component: StepCombat },
+  { key: "wizard.steps.spells", short: "6", component: StepSpells },
   { key: "wizard.steps.attacks", short: "7", component: StepAttacks },
-  { key: "wizard.steps.spells", short: "8", component: StepSpells },
+  { key: "wizard.steps.combat", short: "8", component: StepCombat },
   { key: "wizard.steps.review", short: "9", component: StepReview },
 ];
 

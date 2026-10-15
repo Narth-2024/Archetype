@@ -33,8 +33,8 @@ your sheets ready for the table — in **English, Spanish, and Portuguese**.
 
 ### Character builder
 
-- **Nine guided steps:** Identity → Abilities → Features → Skills → Equipment → Combat →
-  Attacks → Spells → Review, with autosave after every change.
+- **Nine guided steps:** Identity → Abilities → Features → Skills → Equipment →
+  Spells → Attacks → Combat → Review, with autosave after every change.
 - **Three ability-score modes:** Point Buy (27 points with standard costs), Standard Array, and
   Manual — plus a **balanced suggestion engine** that exhaustively searches the budget for your
   class, including racial bonuses.
