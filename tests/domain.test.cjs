@@ -515,5 +515,21 @@ check("dice: dano parsed soma os dados + modificador", (() => {
   return r.total === r.rolls.reduce((a, b) => a + b, 0) + 4;
 })());
 
+// --- nomes de proficiências ---
+check("proficiencyLabel: resolve categoria, item individual e id desconhecido",
+  calc.proficiencyLabel("weapon", "armas_simples") === "Armas simples" &&
+    calc.proficiencyLabel("weapon", "espada_curta") === "Espada Curta" &&
+    calc.proficiencyLabel("weapon", "rapier") === "Rapié" &&
+    calc.proficiencyLabel("weapon", "besta_leve") === "Besta Leve" &&
+    calc.proficiencyLabel("weapon", "cajado") === "Cajado" &&
+    calc.proficiencyLabel("armor", "leve") === "Armaduras leves" &&
+    calc.proficiencyLabel("armor", "escudo") === "Escudos" &&
+    calc.proficiencyLabel("weapon", "arma_inventada") === "Arma Inventada",
+  {
+    simples: calc.proficiencyLabel("weapon", "armas_simples"),
+    espada: calc.proficiencyLabel("weapon", "espada_curta"),
+    desconhecida: calc.proficiencyLabel("weapon", "arma_inventada"),
+  });
+
 console.log(failures === 0 ? "\nTODOS OS TESTES PASSARAM" : `\n${failures} FALHAS`);
 process.exit(failures === 0 ? 0 : 1);

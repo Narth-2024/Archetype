@@ -13,6 +13,7 @@ import {
   hasSpellcasting,
   raceAbility,
   resolveProficiencies,
+  proficiencyLabel,
   speed,
 } from "@/domain/calc";
 
@@ -185,8 +186,10 @@ export function StepFeatures() {
                   {t("wizard.features.classProficiencies")}
                 </span>
                 <span className="text-emerald-400">
-                  {[...profs.armors, ...profs.weapons].join(", ") ||
-                    t("wizard.features.none")}
+                  {[
+                    ...profs.armors.map((a) => proficiencyLabel("armor", a, d)),
+                    ...profs.weapons.map((w) => proficiencyLabel("weapon", w, d)),
+                  ].join(", ") || t("wizard.features.none")}
                 </span>
               </li>
             )}

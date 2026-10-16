@@ -71,4 +71,10 @@ test("combat roller: attack roll shows inline result", async ({ page }) => {
   await expect(roll).toBeVisible();
   await roll.click();
   await expect(page.getByText(/d20 \d+ [+-]\d+ →/)).toBeVisible();
+
+  // Proficiencies show catalog display names, never raw ids
+  const profCard = page.locator("section").filter({ hasText: "Proficiências" });
+  await expect(profCard.getByText("Besta Leve", { exact: true })).toBeVisible();
+  await expect(profCard.getByText("Cajado", { exact: true })).toBeVisible();
+  await expect(page.getByText("besta_leve")).toHaveCount(0);
 });

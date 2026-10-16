@@ -26,6 +26,7 @@ import {
   raceSkills,
   resolveAttackAbility,
   resolveProficiencies,
+  proficiencyLabel,
   saveBonus,
   skillBonus,
   speed,
@@ -67,6 +68,20 @@ export async function SheetView({
   const pb = pbOf(doc);
   const warnings = armorWarnings(doc, d);
   const profs = resolveProficiencies(doc, d);
+  const profBadges = (kind: "armor" | "weapon", ids: string[]) =>
+    ids
+      .map((id) => ({
+        id,
+        name: proficiencyLabel(kind, id, d),
+        cat:
+          kind === "armor"
+            ? d.ARMOR_PROF_OPTIONS.some((o) => o.id === id)
+            : d.WEAPON_PROF_OPTIONS.some((o) => o.id === id),
+      }))
+      // Broad categories first, then alphabetical display names.
+      .sort((x, y) => Number(y.cat) - Number(x.cat) || x.name.localeCompare(y.name));
+  const profArmors = profBadges("armor", profs.armors);
+  const profWeapons = profBadges("weapon", profs.weapons);
   const abilities = allAbilitiesWithBreakdown(doc, d);
   const dc = spellSaveDc(doc, d);
   const spellAtk = spellAttackBonus(doc, d);
@@ -277,16 +292,16 @@ export async function SheetView({
         </Card>
 
         <Card title={t("sheet.proficiencies")} accent="cyan">
-          <div className="flex flex-col gap-3 text-sm">
+          <div className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
             <div>
               <p className="text-xs uppercase text-zinc-500">{t("sheet.armors")}</p>
               <div className="mt-1 flex flex-wrap gap-1.5">
-                {profs.armors.length === 0 ? (
+                {profArmors.length === 0 ? (
                   <span className="text-zinc-600">{t("sheet.noneF")}</span>
                 ) : (
-                  profs.armors.map((a) => (
-                    <Badge key={a} color="blue">
-                      {d.ARMOR_PROF_OPTIONS.find((o) => o.id === a)?.name ?? a}
+                  profArmors.map((a) => (
+                    <Badge key={a.id} color={a.cat ? "blue" : "green"}>
+                      {a.name}
                     </Badge>
                   ))
                 )}
@@ -295,12 +310,12 @@ export async function SheetView({
             <div>
               <p className="text-xs uppercase text-zinc-500">{t("sheet.weapons")}</p>
               <div className="mt-1 flex flex-wrap gap-1.5">
-                {profs.weapons.length === 0 ? (
+                {profWeapons.length === 0 ? (
                   <span className="text-zinc-600">{t("sheet.noneF")}</span>
                 ) : (
-                  profs.weapons.map((w) => (
-                    <Badge key={w} color="blue">
-                      {d.WEAPON_PROF_OPTIONS.find((o) => o.id === w)?.name ?? w}
+                  profWeapons.map((w) => (
+                    <Badge key={w.id} color={w.cat ? "blue" : "green"}>
+                      {w.name}
                     </Badge>
                   ))
                 )}

@@ -491,6 +491,32 @@ export function resolveProficiencies(c: CharacterDoc, d: DataBundle = PT_BUNDLE)
   };
 }
 
+/**
+ * Display name for a proficiency entry. Resolves category ids
+ * ("armas_simples"), individual catalog ids ("espada_curta", "rapier"),
+ * and plain names, falling back to a prettified id.
+ */
+export function proficiencyLabel(
+  kind: "armor" | "weapon",
+  id: string,
+  d: DataBundle = PT_BUNDLE,
+): string {
+  if (kind === "weapon") {
+    const cat = d.WEAPON_PROF_OPTIONS.find((o) => o.id === id);
+    if (cat) return cat.name;
+    const w = d.getWeapon(id);
+    if (w) return w.name;
+    const g = d.getGear(id);
+    if (g) return g.name;
+  } else {
+    const cat = d.ARMOR_PROF_OPTIONS.find((o) => o.id === id);
+    if (cat) return cat.name;
+    const a = d.getArmor(id);
+    if (a) return a.name;
+  }
+  return id.replace(/_/g, " ").replace(/(^|\s)\S/g, (c) => c.toUpperCase());
+}
+
 export function allAbilitiesWithBreakdown(c: CharacterDoc, d: DataBundle = PT_BUNDLE) {
   return ABILITY_KEYS.map((key) => {
     const base = c.abilities[key];

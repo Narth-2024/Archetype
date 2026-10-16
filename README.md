@@ -20,7 +20,7 @@ your sheets ready for the table — in **English, Spanish, and Portuguese**.
   choice means instead of sending you back to the rulebook.
 - **Every value derived, nothing hard-coded** — ability modifiers, proficiency bonus, AC, HP,
   saves, attacks, spell slots, and spellcasting DC are computed at render time by a pure,
-  tested rules engine (`src/domain/calc.ts`, 144 unit checks). Change a level, race, or score and
+  tested rules engine (`src/domain/calc.ts`, 145 unit checks). Change a level, race, or score and
   everything recalculates instantly.
 - **Transparent formulas** — each derived value shows its own breakdown
   (e.g. `AC = 16 chain mail + 2 shield`).
@@ -111,7 +111,7 @@ npm run dev        # http://localhost:3000 — schema is created automatically
 | `npm run start`      | Serve the production build           |
 | `npm run lint`       | ESLint                               |
 | `npm run typecheck`  | `tsc --noEmit`                       |
-| `npm test`           | Rules-engine test suite (144 checks) |
+| `npm test`           | Rules-engine test suite (145 checks) |
 | `npm run db:migrate` | Migrate local data to Turso          |
 
 ## Project structure

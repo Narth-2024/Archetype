@@ -13,6 +13,7 @@ import {
   raceSkillPool,
   raceSkills,
   resolveProficiencies,
+  proficiencyLabel,
   saveBonus,
   skillBonus,
 } from "@/domain/calc";
@@ -110,6 +111,14 @@ export function StepSkills() {
   const rSkills = raceSkills(doc, d);
   const pb = pbOf(doc);
   const profs = resolveProficiencies(doc, d);
+  // Proficiencies granted automatically (e.g. individual weapon ids from the
+  // class) that don't map to a pickable category option.
+  const armorExtras = profs.armors.filter(
+    (a) => !d.ARMOR_PROF_OPTIONS.some((o) => o.id === a),
+  );
+  const weaponExtras = profs.weapons.filter(
+    (w) => !d.WEAPON_PROF_OPTIONS.some((o) => o.id === w),
+  );
   const allowedSaves = classSaveKeys(doc, d);
   const hasClasses = classEntries(doc).length > 0;
 
@@ -296,6 +305,15 @@ export function StepSkills() {
               resolved={profs.armors}
               onToggle={(id) => toggleExtra("armors", id)}
             />
+            {armorExtras.length > 0 && (
+              <p className="mt-2 text-xs text-zinc-500">
+                {t("wizard.skills.automaticList", {
+                  list: armorExtras
+                    .map((a) => proficiencyLabel("armor", a, d))
+                    .join(", "),
+                })}
+              </p>
+            )}
           </div>
           <div>
             <h4 className="mb-2 text-xs font-semibold uppercase text-zinc-500">
@@ -307,6 +325,15 @@ export function StepSkills() {
               resolved={profs.weapons}
               onToggle={(id) => toggleExtra("weapons", id)}
             />
+            {weaponExtras.length > 0 && (
+              <p className="mt-2 text-xs text-zinc-500">
+                {t("wizard.skills.automaticList", {
+                  list: weaponExtras
+                    .map((w) => proficiencyLabel("weapon", w, d))
+                    .join(", "),
+                })}
+              </p>
+            )}
           </div>
           <div>
             <h4 className="mb-2 text-xs font-semibold uppercase text-zinc-500">
