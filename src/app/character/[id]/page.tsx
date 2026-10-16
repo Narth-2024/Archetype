@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { CombatQuickBar } from "@/components/sheet/CombatQuickBar";
 import { CombatTracker } from "@/components/sheet/CombatTracker";
+import { ClassResources } from "@/components/sheet/ClassResources";
 import { SheetView } from "@/components/sheet/SheetView";
 import {
   armorClass,
@@ -10,6 +11,7 @@ import {
   speed,
 } from "@/domain/calc";
 import { getCharacter } from "@/lib/characters";
+import { resourceStates } from "@/domain/resources";
 import { requireUser } from "@/lib/auth";
 import { getI18n } from "@/lib/i18n/server";
 
@@ -49,6 +51,14 @@ export default async function CharacterSheetPage({
           conSaveBonus={saveBonus(doc, "con", d).value}
         />
       </div>
+      {resourceStates(doc, d).length > 0 && (
+        <div className="mb-6">
+          <ClassResources
+            characterId={id}
+            resources={resourceStates(doc, d)}
+          />
+        </div>
+      )}
       <SheetView doc={doc} characterId={id} />
     </main>
   );

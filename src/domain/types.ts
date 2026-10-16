@@ -124,6 +124,8 @@ export type CharacterDoc = {
   notes: string;
   photo?: string;
   lore?: string;
+  /** Spent counts for long-rest class resources (bardic inspiration, ki...). */
+  resources: Record<string, number>;
 };
 
 export type CharacterSummary = {

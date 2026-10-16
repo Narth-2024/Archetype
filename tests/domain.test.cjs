@@ -579,5 +579,60 @@ check("dice: vantagem/desvantagem rolam 2d20 e escolhem o dado", (() => {
   return true;
 })());
 
+// --- recursos de classe ---
+const { classResources, normalizeResources, resourceStates } = require(path + "/domain/resources.js");
+const mkResDoc = (classes, abilities = {}) => ({
+  identity: { name: "T", classes, abilityMode: "pontos" },
+  abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10, ...abilities },
+  feats: [],
+  skills: {},
+  saves: {},
+  proficiencies: { weapons: [], armors: [], tools: [], languages: [] },
+  resources: {},
+});
+const resKeys = (doc) => classResources(doc).map((r) => r.key);
+const resMax = (doc, key) => classResources(doc).find((r) => r.key === key)?.max;
+check("resources: bardo tem inspiração igual ao mod de CAR (mín. 1)",
+  resMax(mkResDoc([{ classId: "bardo", level: 1 }]), "inspiracao_bardica") === 1 &&
+    resMax(mkResDoc([{ classId: "bardo", level: 3 }], { cha: 16 }), "inspiracao_bardica") === 3);
+check("resources: monge só ganha ki a partir do 2º nível",
+  !resKeys(mkResDoc([{ classId: "monge", level: 1 }])).includes("pontos_de_ki") &&
+    resMax(mkResDoc([{ classId: "monge", level: 5 }]), "pontos_de_ki") === 5);
+check("resources: fúria segue a tabela e é ilimitada no 20",
+  resMax(mkResDoc([{ classId: "barbaro", level: 1 }]), "furia") === 2 &&
+    resMax(mkResDoc([{ classId: "barbaro", level: 6 }]), "furia") === 4 &&
+    resMax(mkResDoc([{ classId: "barbaro", level: 17 }]), "furia") === 6 &&
+    resMax(mkResDoc([{ classId: "barbaro", level: 20 }]), "furia") === null);
+check("resources: feiticeiro ganha pontos de metamagia do 2º nível",
+  !resKeys(mkResDoc([{ classId: "feiticeiro", level: 1 }])).includes("pontos_metamagia") &&
+    resMax(mkResDoc([{ classId: "feiticeiro", level: 4 }]), "pontos_metamagia") === 4);
+check("resources: multiclasse lista os dois recursos",
+  JSON.stringify(resKeys(mkResDoc([{ classId: "bardo", level: 3 }, { classId: "monge", level: 2 }]))) ===
+    JSON.stringify(["inspiracao_bardica", "pontos_de_ki"]));
+check("resources: usado vem do doc; normalização filtra chaves desconhecidas",
+  (() => {
+    const doc = mkResDoc([{ classId: "bardo", level: 1 }]);
+    doc.resources = { inspiracao_bardica: 1, hackeado: 5 };
+    const states = resourceStates(doc);
+    const norm = normalizeResources({ furia: 2, inventada: 9, pontos_de_ki: "x" });
+    return states[0].used === 1 &&
+      states[0].max === 1 &&
+      norm.furia === 2 &&
+      !("inventada" in norm) &&
+      norm.pontos_de_ki === undefined &&
+      normalizeResources(null).furia === undefined &&
+      resourceStates({ ...doc, resources: undefined }).some((s) => s.used === 0);
+  })());
+check("migrate: docs antigos ganham resources vazio",
+  (() => {
+    const m = migrateDoc({ schemaVersion: 3, identity: { name: "Old", classes: [] } });
+    return m.resources != null && typeof m.resources === "object" && Object.keys(m.resources).length === 0;
+  })());
+check("import: resources normalizadas no roundtrip",
+  (() => {
+    const doc = parseImportedDoc({ identity: { name: "Res" }, resources: { furia: 3, inventada: 9 } });
+    return doc.resources.furia === 3 && !("inventada" in doc.resources);
+  })());
+
 console.log(failures === 0 ? "\nTODOS OS TESTES PASSARAM" : `\n${failures} FALHAS`);
 process.exit(failures === 0 ? 0 : 1);

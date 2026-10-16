@@ -49,6 +49,38 @@ test("combat tracker: conditions tick down with rounds and persist", async ({
   await expect(chip(page, "Envenenado")).toHaveCount(0);
 });
 
+test("class resources: bardic inspiration pips toggle, persist, long rest", async ({
+  page,
+}) => {
+  await registerFresh(page);
+  await page.getByRole("button", { name: "Novo personagem" }).click();
+  await page.waitForURL(/\/character\/.+\/edit/);
+  await page.getByPlaceholder("Ex: Thora Valdris").fill("E2E Bardo");
+
+  const addBtn = page.getByRole("button", { name: "Adicionar classe" });
+  if (await addBtn.isVisible().catch(() => false)) await addBtn.click();
+  const search = page.getByPlaceholder("Buscar classe...").first();
+  await search.fill("Bardo");
+  await search.locator("xpath=following-sibling::select[1]").selectOption({
+    label: "Bardo",
+  });
+  await expect(page.getByText("Salvo")).toBeVisible();
+  const id = new URL(page.url()).pathname.split("/")[2];
+  await page.goto(`/character/${id}`);
+
+  const resCard = page.locator("section").filter({ hasText: "Recursos" });
+  await expect(resCard.getByText("Inspiração Bardica")).toBeVisible();
+  await resCard
+    .getByRole("button", { name: "Inspiração Bardica 1/1" })
+    .click();
+  await expect(resCard.getByText("0/1")).toBeVisible();
+  await page.reload();
+  await expect(resCard.getByText("0/1")).toBeVisible();
+  await page.getByRole("button", { name: "Descanso longo" }).click();
+  await page.getByRole("button", { name: "Confirmar descanso" }).click();
+  await expect(resCard.getByText("1/1")).toBeVisible();
+});
+
 test("combat roller: attack roll shows inline result", async ({ page }) => {
   await registerFresh(page);
   await page.getByRole("button", { name: "Novo personagem" }).click();

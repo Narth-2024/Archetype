@@ -1,4 +1,5 @@
 import type { CharacterDoc } from "./types";
+import { normalizeResources } from "./resources";
 
 export function migrateDoc(raw: unknown): CharacterDoc {
   const doc = raw as Record<string, unknown> & {
@@ -34,6 +35,7 @@ export function migrateDoc(raw: unknown): CharacterDoc {
   doc.feats ??= [];
   doc.photo ??= "";
   doc.lore ??= "";
+  doc.resources = normalizeResources(doc.resources);
   const combat = (doc.combat ??= {}) as Record<string, unknown>;
   combat.hpCurrent ??= 0;
   combat.hpTemp ??= 0;

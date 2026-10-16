@@ -10,6 +10,7 @@ import type {
 } from "./types";
 import { ABILITY_KEYS, SKILL_KEYS } from "./types";
 import { isConditionKey, type ConditionKey } from "./conditions";
+import { normalizeResources } from "./resources";
 
 const PHOTO_LIMIT = 700_000;
 const LORE_LIMIT = 30_000;
@@ -251,6 +252,7 @@ export function parseImportedDoc(raw: unknown): CharacterDoc | null {
       round: int(combat.round, 0, 0, 999),
       conditions: normalizeConditions(combat.conditions),
     },
+    resources: normalizeResources(raw.resources),
     notes: str(raw.notes).slice(0, NOTES_LIMIT),
     photo: normalizePhoto(raw.photo),
     lore: str(raw.lore).slice(0, LORE_LIMIT),

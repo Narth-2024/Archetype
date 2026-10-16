@@ -20,7 +20,7 @@ your sheets ready for the table — in **English, Spanish, and Portuguese**.
   choice means instead of sending you back to the rulebook.
 - **Every value derived, nothing hard-coded** — ability modifiers, proficiency bonus, AC, HP,
   saves, attacks, spell slots, and spellcasting DC are computed at render time by a pure,
-  tested rules engine (`src/domain/calc.ts`, 153 unit checks). Change a level, race, or score and
+  tested rules engine (`src/domain/calc.ts`, 161 unit checks). Change a level, race, or score and
   everything recalculates instantly.
 - **Transparent formulas** — each derived value shows its own breakdown
   (e.g. `AC = 16 chain mail + 2 shield`).
@@ -69,6 +69,8 @@ your sheets ready for the table — in **English, Spanish, and Portuguese**.
 - **Inline dice** — d20 to-hit and damage buttons on every attack (and on spell attack) that show
   the roll, the total, and critical/fumble results without leaving the sheet; attack rolls honor
   condition advantage/disadvantage by rolling 2d20 and highlighting which die counts.
+- **Class resources** — bardic inspiration, ki points, rage, and sorcery points as clickable
+  pips (long-rest resources), sized by class level and reset by long rest.
 - **Full sheet cards** — abilities, combat, skills, saves, proficiencies, inventory, attacks,
   spells, features, and notes.
 - **Character photo** — upload a picture (compressed client-side to ≤ 512 px JPEG) directly from
@@ -115,7 +117,7 @@ npm run dev        # http://localhost:3000 — schema is created automatically
 | `npm run start`      | Serve the production build           |
 | `npm run lint`       | ESLint                               |
 | `npm run typecheck`  | `tsc --noEmit`                       |
-| `npm test`           | Rules-engine test suite (153 checks) |
+| `npm test`           | Rules-engine test suite (161 checks) |
 | `npm run db:migrate` | Migrate local data to Turso          |
 
 ## Project structure

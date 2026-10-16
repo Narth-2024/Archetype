@@ -7,6 +7,7 @@ import {
 import { readSessionUser } from "@/lib/auth";
 import { migrateDoc } from "@/domain/migrate";
 import { isConditionKey, type ConditionKey } from "@/domain/conditions";
+import { normalizeResources } from "@/domain/resources";
 import type { CharacterDoc } from "@/domain/types";
 import { getI18n } from "@/lib/i18n/server";
 
@@ -64,6 +65,7 @@ export async function PATCH(request: Request, { params }: Params) {
     lore?: string;
     notes?: string;
     spellcasting?: { slotsUsed?: Record<string, number> };
+    resources?: Record<string, unknown>;
   } | null;
   const doc = await getCharacter(id, user.id);
   if (!doc || !patch) {
@@ -90,6 +92,8 @@ export async function PATCH(request: Request, { params }: Params) {
               : null,
         }));
   }
+  if (patch.resources && typeof patch.resources === "object")
+    doc.resources = normalizeResources(patch.resources);
   if (typeof patch.photo === "string") {
     const valid =
       patch.photo === "" ||

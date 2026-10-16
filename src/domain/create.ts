@@ -43,5 +43,6 @@ export function newCharacterDoc(): CharacterDoc {
     notes: "",
     photo: "",
     lore: "",
+    resources: {},
   };
 }

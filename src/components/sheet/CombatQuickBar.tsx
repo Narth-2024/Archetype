@@ -67,6 +67,7 @@ export function CombatQuickBar({
       await patch({
         combat: { hpCurrent: hpMax, hpTemp: 0, round: 0, conditions: [] },
         spellcasting: { slotsUsed: {} },
+        resources: {},
       });
       setConfirmRest(false);
       router.refresh();
