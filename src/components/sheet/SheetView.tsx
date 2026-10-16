@@ -37,6 +37,70 @@ import {
 } from "@/domain/calc";
 import { getI18n } from "@/lib/i18n/server";
 
+function Chevron() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className="size-3.5 shrink-0 text-zinc-600 transition-transform group-open:rotate-90"
+    >
+      <path
+        fillRule="evenodd"
+        d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+function TraitGroup({
+  title,
+  count,
+  children,
+}: {
+  title: string;
+  count: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <details className="group rounded-md border border-zinc-800/60 px-3">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 py-2 [&::-webkit-details-marker]:hidden">
+        <span className="text-xs font-semibold uppercase text-zinc-400">
+          {title}
+        </span>
+        <span className="flex items-center gap-1.5 text-xs tabular-nums text-zinc-600">
+          {count}
+          <Chevron />
+        </span>
+      </summary>
+      <ul className="flex flex-col border-t border-zinc-800/60 pb-1">
+        {children}
+      </ul>
+    </details>
+  );
+}
+
+function Trait({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <details className="group border-b border-zinc-800/40 last:border-0">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 py-1.5 pr-1 pl-1 [&::-webkit-details-marker]:hidden">
+        <span className="text-sm font-semibold text-zinc-200">{title}</span>
+        <Chevron />
+      </summary>
+      <p className="pb-2 pr-2 pl-4 text-sm leading-relaxed text-zinc-400">
+        {description}
+      </p>
+    </details>
+  );
+}
+
 export async function SheetView({
   doc,
   characterId,
@@ -551,97 +615,97 @@ export async function SheetView({
         </Card>
 
         <Card title={t("sheet.features")} accent="teal">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
             {race && (
-              <div>
-                <p className="text-xs uppercase text-zinc-500">{race.name}</p>
-                <ul className="mt-1 flex flex-col gap-1 text-sm text-zinc-300">
-                  {race.traits.map((trait) => (
-                    <li key={trait.name}>
-                      <strong className="text-zinc-200">{trait.name}:</strong>{" "}
-                      {fmt.distanceText(trait.description)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <TraitGroup title={race.name} count={race.traits.length}>
+                {race.traits.map((trait) => (
+                  <Trait
+                    key={trait.name}
+                    title={trait.name}
+                    description={fmt.distanceText(trait.description)}
+                  />
+                ))}
+              </TraitGroup>
             )}
             {subrace && subrace.traits.length > 0 && (
-              <div>
-                <p className="text-xs uppercase text-zinc-500">{subrace.name}</p>
-                <ul className="mt-1 flex flex-col gap-1 text-sm text-zinc-300">
-                  {subrace.traits.map((trait) => (
-                    <li key={trait.name}>
-                      <strong className="text-zinc-200">{trait.name}:</strong>{" "}
-                      {fmt.distanceText(trait.description)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <TraitGroup title={subrace.name} count={subrace.traits.length}>
+                {subrace.traits.map((trait) => (
+                  <Trait
+                    key={trait.name}
+                    title={trait.name}
+                    description={fmt.distanceText(trait.description)}
+                  />
+                ))}
+              </TraitGroup>
             )}
             {classes.map(({ cls, level, subclassId }) => {
               const subclass = d.getSubclass(subclassId ?? "");
               const subclassFeatures = (subclass?.features ?? []).filter(
                 (f) => f.level <= level,
               );
+              const classFeatures = cls.features.filter(
+                (trait) => trait.level <= level,
+              );
               return (
-                <div key={cls.id}>
-                  <p className="text-xs uppercase text-zinc-500">{cls.name}</p>
-                  <ul className="mt-1 flex flex-col gap-1 text-sm text-zinc-300">
-                    {cls.features
-                      .filter((trait) => trait.level <= level)
-                      .map((trait) => (
-                        <li key={`${trait.level}-${trait.name}`}>
-                          <strong className="text-zinc-200">{trait.name}:</strong>{" "}
-                          {fmt.distanceText(trait.description)}
-                        </li>
-                      ))}
-                    {subclass &&
-                      (subclassFeatures.length > 0 ? (
-                        subclassFeatures.map((trait) => (
-                          <li key={trait.name}>
-                            <strong className="text-zinc-200">
-                              {subclass.name} — {trait.name}:
-                            </strong>{" "}
-                            {fmt.distanceText(trait.description)}
-                          </li>
-                        ))
-                      ) : (
-                        <li className="text-zinc-500">
-                          {t("sheet.subclassLocked", {
-                            name: subclass.name,
-                            level: fmt.num(subclass.level),
-                          })}
-                        </li>
-                      ))}
-                  </ul>
-                </div>
+                <TraitGroup
+                  key={cls.id}
+                  title={cls.name}
+                  count={classFeatures.length + subclassFeatures.length}
+                >
+                  {classFeatures.map((trait) => (
+                    <Trait
+                      key={`${trait.level}-${trait.name}`}
+                      title={trait.name}
+                      description={fmt.distanceText(trait.description)}
+                    />
+                  ))}
+                  {subclass &&
+                    (subclassFeatures.length > 0 ? (
+                      subclassFeatures.map((trait) => (
+                        <Trait
+                          key={trait.name}
+                          title={`${subclass.name} — ${trait.name}`}
+                          description={fmt.distanceText(trait.description)}
+                        />
+                      ))
+                    ) : (
+                      <li className="px-1 py-1.5 text-sm text-zinc-500">
+                        {t("sheet.subclassLocked", {
+                          name: subclass.name,
+                          level: fmt.num(subclass.level),
+                        })}
+                      </li>
+                    ))}
+                </TraitGroup>
               );
             })}
             {selectedFeats.length > 0 && (
-              <div>
-                <p className="text-xs uppercase text-zinc-500">{t("sheet.feats")}</p>
-                <ul className="mt-1 flex flex-col gap-1 text-sm text-zinc-300">
-                  {selectedFeats.map(({ ref, feat }) => {
-                    const ability = d.parseFeatRef(ref).ability;
-                    return (
-                      <li key={ref}>
-                        <strong className="text-zinc-200">{feat.name}</strong>
-                        {ability ? t("sheet.abilityBonus", { ability: d.ABILITY_ABBR[ability] }) : ""}:{" "}
-                        {feat.description}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
+              <TraitGroup title={t("sheet.feats")} count={selectedFeats.length}>
+                {selectedFeats.map(({ ref, feat }) => {
+                  const ability = d.parseFeatRef(ref).ability;
+                  return (
+                    <Trait
+                      key={ref}
+                      title={`${feat.name}${
+                        ability
+                          ? t("sheet.abilityBonus", {
+                              ability: d.ABILITY_ABBR[ability],
+                            })
+                          : ""
+                      }`}
+                      description={feat.description}
+                    />
+                  );
+                })}
+              </TraitGroup>
             )}
             {bg && (
-              <div>
-                <p className="text-xs uppercase text-zinc-500">{bg.name}</p>
-                <p className="mt-1 text-sm text-zinc-300">
-                  <strong className="text-zinc-200">{bg.feature.name}:</strong>{" "}
-                  {bg.feature.description}
-                </p>
-              </div>
+              <TraitGroup title={bg.name} count={1}>
+                <Trait
+                  title={bg.feature.name}
+                  description={bg.feature.description}
+                />
+              </TraitGroup>
             )}
           </div>
         </Card>
