@@ -6,6 +6,7 @@ import {
   armorClass,
   initiative,
   maxHp,
+  saveBonus,
   speed,
 } from "@/domain/calc";
 import { getCharacter } from "@/lib/characters";
@@ -45,6 +46,7 @@ export default async function CharacterSheetPage({
           characterId={id}
           round={doc.combat.round}
           conditions={doc.combat.conditions}
+          conSaveBonus={saveBonus(doc, "con", d).value}
         />
       </div>
       <SheetView doc={doc} characterId={id} />

@@ -1,3 +1,5 @@
+import type { RollMode } from "./conditions";
+
 export type DiceGroup = { count: number; sides: number };
 
 export type ParsedDamage = {
@@ -12,6 +14,9 @@ export type DiceRoll = {
 
 export type AttackRoll = {
   d20: number;
+  /** The d20 roll(s): two dice when rolling with advantage/disadvantage. */
+  rolls: number[];
+  mode: RollMode;
   total: number;
   nat: "crit" | "fumble" | null;
 };
@@ -59,8 +64,14 @@ export function rollParsedDamage(parsed: ParsedDamage): DiceRoll & { mod: number
   return { total: rolls.reduce((a, b) => a + b, 0) + parsed.mod, rolls, mod: parsed.mod };
 }
 
-export function rollAttack(bonus: number): AttackRoll {
-  const d20 = rollDie(20);
+export function rollAttack(bonus: number, mode: RollMode = "normal"): AttackRoll {
+  const rolls = mode === "normal" ? [rollDie(20)] : [rollDie(20), rollDie(20)];
+  const d20 =
+    mode === "advantage"
+      ? Math.max(...rolls)
+      : mode === "disadvantage"
+        ? Math.min(...rolls)
+        : rolls[0];
   const nat = d20 === 20 ? "crit" : d20 === 1 ? "fumble" : null;
-  return { d20, total: d20 + bonus, nat };
+  return { d20, rolls, mode, total: d20 + bonus, nat };
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { RollMode } from "@/domain/conditions";
 import {
   parseDamageExpression,
   rollAttack,
@@ -9,15 +10,24 @@ import {
 import { useFormat, useT } from "@/lib/i18n/client";
 
 type RollerResult =
-  | { kind: "attack"; d20: number; total: number; nat: "crit" | "fumble" | null }
+  | {
+      kind: "attack";
+      d20: number;
+      rolls: number[];
+      mode: RollMode;
+      total: number;
+      nat: "crit" | "fumble" | null;
+    }
   | { kind: "damage"; expr: string; total: number };
 
 export function DiceRoller({
   bonus,
   damageExpr,
+  mode = "normal",
 }: {
   bonus: number;
   damageExpr: string | null;
+  mode?: RollMode;
 }) {
   const t = useT();
   const fmt = useFormat();
@@ -31,7 +41,7 @@ export function DiceRoller({
         type="button"
         aria-label={t("sheet.rollAttack")}
         onClick={() => {
-          const r = rollAttack(bonus);
+          const r = rollAttack(bonus, mode);
           setResult({ kind: "attack", ...r });
         }}
         className="rounded-md border border-amber-800 px-2 py-1 text-xs font-bold text-amber-400 transition hover:bg-amber-950/60"
@@ -53,7 +63,15 @@ export function DiceRoller({
       )}
       {result?.kind === "attack" && (
         <span className="text-xs tabular-nums text-zinc-400" role="status">
-          d20 {fmt.num(result.d20)} {signedBonus} →{" "}
+          {result.mode === "normal" ? (
+            <>d20 {fmt.num(result.d20)}</>
+          ) : (
+            <>
+              d20 [{result.rolls.map((r) => fmt.num(r)).join(", ")}]→
+              {fmt.num(result.d20)}
+            </>
+          )}{" "}
+          {signedBonus} →{" "}
           <strong
             className={
               result.nat === "crit"
@@ -65,6 +83,15 @@ export function DiceRoller({
           >
             {fmt.num(result.total)}
           </strong>
+          {result.mode === "advantage" && (
+            <span className="text-amber-500/80"> {t("sheet.withAdvantage")}</span>
+          )}
+          {result.mode === "disadvantage" && (
+            <span className="text-amber-500/80">
+              {" "}
+              {t("sheet.withDisadvantage")}
+            </span>
+          )}
           {result.nat === "crit" && (
             <span className="text-amber-400"> {t("sheet.crit")}</span>
           )}

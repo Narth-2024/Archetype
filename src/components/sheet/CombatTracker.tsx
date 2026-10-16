@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { CombatCondition } from "@/domain/types";
-import { CONDITION_I18N_KEY, CONDITION_KEYS, type ConditionKey } from "@/domain/conditions";
+import {
+  CONDITION_I18N_KEY,
+  CONDITION_KEYS,
+  conditionEffects,
+  type ConditionKey,
+} from "@/domain/conditions";
+import { rollDie } from "@/domain/dice";
 import { Card, NumberInput, Select } from "@/components/ui";
 import { useFormat, useT } from "@/lib/i18n/client";
 
@@ -11,10 +17,12 @@ export function CombatTracker({
   characterId,
   round,
   conditions,
+  conSaveBonus,
 }: {
   characterId: string;
   round: number;
   conditions: CombatCondition[];
+  conSaveBonus: number;
 }) {
   const router = useRouter();
   const t = useT();
@@ -23,6 +31,27 @@ export function CombatTracker({
   const [error, setError] = useState(false);
   const [pick, setPick] = useState("");
   const [rounds, setRounds] = useState(0);
+  const [concRoll, setConcRoll] = useState<{ d20: number; total: number } | null>(
+    null,
+  );
+
+  const effects = conditionEffects(conditions);
+  const effectLabels = [
+    effects.attackRoll === "disadvantage"
+      ? t("sheet.effects.attacksDisadvantage")
+      : null,
+    effects.attackRoll === "advantage"
+      ? t("sheet.effects.attacksAdvantage")
+      : null,
+    effects.checksDisadvantage ? t("sheet.effects.checksDisadvantage") : null,
+    effects.attacksAgainstAdvantage
+      ? t("sheet.effects.againstAdvantage")
+      : null,
+    effects.speedZero ? t("sheet.effects.speedZero") : null,
+    effects.autoCritMelee ? t("sheet.effects.autoCrit") : null,
+    effects.cannotAct ? t("sheet.effects.cannotAct") : null,
+    effects.concentration ? t("sheet.effects.concentration") : null,
+  ].filter((label): label is string => Boolean(label));
 
   async function patchCombat(body: {
     round?: number;
@@ -110,12 +139,12 @@ export function CombatTracker({
           </button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <Select
             aria-label={t("sheet.addCondition")}
             value={pick}
             onChange={(e) => setPick(e.target.value)}
-            className="w-auto"
+            className="w-full sm:w-auto"
           >
             <option value="">{t("sheet.addCondition")}</option>
             {CONDITION_KEYS.map((k) => (
@@ -124,24 +153,26 @@ export function CombatTracker({
               </option>
             ))}
           </Select>
-          <NumberInput
-            value={rounds}
-            onChange={setRounds}
-            min={0}
-            max={99}
-            ariaLabel={t("sheet.roundsLabel")}
-            decreaseLabel={t("sheet.roundsLabel")}
-            increaseLabel={t("sheet.roundsLabel")}
-          />
-          <button
-            type="button"
-            disabled={busy || !pick}
-            aria-label={t("sheet.addCondition")}
-            onClick={addCondition}
-            className="rounded-md border border-emerald-800 px-2.5 py-1.5 text-xs font-bold text-emerald-400 transition hover:bg-emerald-950/60 disabled:opacity-50"
-          >
-            +
-          </button>
+          <div className="flex items-center gap-2">
+            <NumberInput
+              value={rounds}
+              onChange={setRounds}
+              min={0}
+              max={99}
+              ariaLabel={t("sheet.roundsLabel")}
+              decreaseLabel={t("sheet.roundsLabel")}
+              increaseLabel={t("sheet.roundsLabel")}
+            />
+            <button
+              type="button"
+              disabled={busy || !pick}
+              aria-label={t("sheet.addCondition")}
+              onClick={addCondition}
+              className="rounded-md border border-emerald-800 px-2.5 py-1.5 text-xs font-bold text-emerald-400 transition hover:bg-emerald-950/60 disabled:opacity-50"
+            >
+              +
+            </button>
+          </div>
         </div>
       </div>
 
@@ -176,6 +207,46 @@ export function CombatTracker({
           })
         )}
       </div>
+
+      {effectLabels.length > 0 && (
+        <div
+          className="mt-3 flex flex-wrap gap-1.5"
+          aria-label={t("sheet.activeEffects")}
+        >
+          {effectLabels.map((label) => (
+            <span
+              key={label}
+              className="rounded border border-amber-700/50 bg-amber-950/30 px-1.5 py-0.5 text-[11px] text-amber-500"
+            >
+              {label}
+            </span>
+          ))}
+        </div>
+      )}
+      {effects.concentration && (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              const d20 = rollDie(20);
+              setConcRoll({ d20, total: d20 + conSaveBonus });
+            }}
+            className="rounded-md border border-teal-800 px-2.5 py-1.5 text-xs font-semibold text-teal-400 transition hover:bg-teal-950/60 disabled:opacity-50"
+          >
+            {t("sheet.concentrationSave")}
+          </button>
+          {concRoll && (
+            <span className="text-xs tabular-nums text-zinc-400" role="status">
+              1d20 {fmt.num(concRoll.d20)}{" "}
+              {conSaveBonus >= 0
+                ? `+${fmt.num(conSaveBonus)}`
+                : fmt.num(conSaveBonus)}{" "}
+              → <strong className="text-zinc-100">{fmt.num(concRoll.total)}</strong>
+            </span>
+          )}
+        </div>
+      )}
     </Card>
   );
 }

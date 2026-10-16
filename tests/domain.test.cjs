@@ -531,5 +531,53 @@ check("proficiencyLabel: resolve categoria, item individual e id desconhecido",
     desconhecida: calc.proficiencyLabel("weapon", "arma_inventada"),
   });
 
+// --- efeitos de condição ---
+const { conditionEffects } = require(path + "/domain/conditions.js");
+const cond = (...keys) => keys.map((key, i) => ({ id: String(i), key, rounds: null }));
+check("conditionEffects: sem condições não altera nada",
+  (() => {
+    const e = conditionEffects([]);
+    return e.attackRoll === "normal" && !e.checksDisadvantage &&
+      !e.attacksAgainstAdvantage && !e.speedZero && !e.autoCritMelee &&
+      !e.cannotAct && !e.concentration;
+  })());
+check("conditionEffects: envenenado dá desvantagem em ataques e testes",
+  (() => {
+    const e = conditionEffects(cond("envenenado"));
+    return e.attackRoll === "disadvantage" && e.checksDisadvantage;
+  })());
+check("conditionEffects: invisível dá vantagem em ataques",
+  conditionEffects(cond("invisivel")).attackRoll === "advantage");
+check("conditionEffects: vantagem e desvantagem se cancelam",
+  conditionEffects(cond("invisivel", "caido")).attackRoll === "normal");
+check("conditionEffects: paralisado combina deslocamento 0, crítico e incapacidade",
+  (() => {
+    const e = conditionEffects(cond("paralisado"));
+    return e.speedZero && e.autoCritMelee && e.cannotAct && e.attacksAgainstAdvantage;
+  })());
+check("conditionEffects: caído não zera deslocamento nem incapacita",
+  (() => {
+    const e = conditionEffects(cond("caido"));
+    return e.attackRoll === "disadvantage" && !e.speedZero && !e.cannotAct;
+  })());
+check("conditionEffects: concentração detectada",
+  conditionEffects(cond("concentracao")).concentration === true &&
+    !conditionEffects(cond("cego")).concentration);
+
+// --- rolagem com vantagem/desvantagem ---
+check("dice: vantagem/desvantagem rolam 2d20 e escolhem o dado", (() => {
+  for (let i = 0; i < 30; i++) {
+    const adv = rollAttack(5, "advantage");
+    if (adv.rolls.length !== 2 || adv.d20 !== Math.max(...adv.rolls)) return false;
+    if (adv.total !== adv.d20 + 5) return false;
+    const dis = rollAttack(5, "disadvantage");
+    if (dis.rolls.length !== 2 || dis.d20 !== Math.min(...dis.rolls)) return false;
+    const normal = rollAttack(5);
+    if (normal.rolls.length !== 1 || normal.d20 !== normal.rolls[0]) return false;
+    if (normal.mode !== "normal" || adv.mode !== "advantage") return false;
+  }
+  return true;
+})());
+
 console.log(failures === 0 ? "\nTODOS OS TESTES PASSARAM" : `\n${failures} FALHAS`);
 process.exit(failures === 0 ? 0 : 1);

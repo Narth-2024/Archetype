@@ -10,6 +10,7 @@ import { SheetActions } from "@/components/sheet/SheetActions";
 import { SpellSlotPips } from "@/components/sheet/SpellSlotPips";
 import { DiceRoller } from "@/components/sheet/DiceRoller";
 import { ABILITY_KEYS, SKILL_KEYS } from "@/domain/types";
+import { conditionEffects } from "@/domain/conditions";
 import {
   allAbilitiesWithBreakdown,
   armorClass,
@@ -146,6 +147,7 @@ export async function SheetView({
       .sort((x, y) => Number(y.cat) - Number(x.cat) || x.name.localeCompare(y.name));
   const profArmors = profBadges("armor", profs.armors);
   const profWeapons = profBadges("weapon", profs.weapons);
+  const condEffects = conditionEffects(doc.combat.conditions);
   const abilities = allAbilitiesWithBreakdown(doc, d);
   const dc = spellSaveDc(doc, d);
   const spellAtk = spellAttackBonus(doc, d);
@@ -207,7 +209,7 @@ export async function SheetView({
             </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <LangSelect />
             <ThemeToggle />
             <UnitsSelect />
@@ -320,6 +322,11 @@ export async function SheetView({
         </Card>
 
         <Card title={t("sheet.skills")} accent="sky">
+          {condEffects.checksDisadvantage && (
+            <p className="mb-3 rounded-md border border-amber-800/60 bg-amber-950/20 px-2.5 py-1.5 text-xs text-amber-400">
+              {t("sheet.effects.checksDisadvantage")}
+            </p>
+          )}
           <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-1">
             {SKILL_KEYS.map((id) => {
               const skill = d.getSkill(id);
@@ -497,7 +504,11 @@ export async function SheetView({
                         </span>
                       </div>
                       <div className="ml-auto self-center">
-                        <DiceRoller bonus={bonus.value} damageExpr={damage} />
+                        <DiceRoller
+                          bonus={bonus.value}
+                          damageExpr={damage}
+                          mode={condEffects.attackRoll}
+                        />
                       </div>
                     </div>
                     <p className="mt-1.5 text-xs text-zinc-600">
@@ -554,7 +565,11 @@ export async function SheetView({
                 </div>
                 </div>
                 {spellAtk && (
-                  <DiceRoller bonus={spellAtk.value} damageExpr={null} />
+                  <DiceRoller
+                    bonus={spellAtk.value}
+                    damageExpr={null}
+                    mode={condEffects.attackRoll}
+                  />
                 )}
               </div>
 

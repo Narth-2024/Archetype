@@ -20,7 +20,7 @@ your sheets ready for the table — in **English, Spanish, and Portuguese**.
   choice means instead of sending you back to the rulebook.
 - **Every value derived, nothing hard-coded** — ability modifiers, proficiency bonus, AC, HP,
   saves, attacks, spell slots, and spellcasting DC are computed at render time by a pure,
-  tested rules engine (`src/domain/calc.ts`, 145 unit checks). Change a level, race, or score and
+  tested rules engine (`src/domain/calc.ts`, 153 unit checks). Change a level, race, or score and
   everything recalculates instantly.
 - **Transparent formulas** — each derived value shows its own breakdown
   (e.g. `AC = 16 chain mail + 2 shield`).
@@ -63,8 +63,12 @@ your sheets ready for the table — in **English, Spanish, and Portuguese**.
   and long rest.
 - **Combat tracker** — round counter plus the 15 SRD conditions with optional round durations;
   "+1 round" ticks every timer and expires what ended, and long rest resets the tracker.
+  Active conditions show their mechanical effects (attack/check disadvantage, attacks against
+  you with advantage, speed 0, automatic melee criticals, inability to act) and a one-click
+  Constitution save for maintaining concentration.
 - **Inline dice** — d20 to-hit and damage buttons on every attack (and on spell attack) that show
-  the roll, the total, and critical/fumble results without leaving the sheet.
+  the roll, the total, and critical/fumble results without leaving the sheet; attack rolls honor
+  condition advantage/disadvantage by rolling 2d20 and highlighting which die counts.
 - **Full sheet cards** — abilities, combat, skills, saves, proficiencies, inventory, attacks,
   spells, features, and notes.
 - **Character photo** — upload a picture (compressed client-side to ≤ 512 px JPEG) directly from
@@ -111,7 +115,7 @@ npm run dev        # http://localhost:3000 — schema is created automatically
 | `npm run start`      | Serve the production build           |
 | `npm run lint`       | ESLint                               |
 | `npm run typecheck`  | `tsc --noEmit`                       |
-| `npm test`           | Rules-engine test suite (145 checks) |
+| `npm test`           | Rules-engine test suite (153 checks) |
 | `npm run db:migrate` | Migrate local data to Turso          |
 
 ## Project structure

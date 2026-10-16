@@ -72,6 +72,25 @@ test("combat roller: attack roll shows inline result", async ({ page }) => {
   await roll.click();
   await expect(page.getByText(/d20 \d+ [+-]\d+ →/)).toBeVisible();
 
+  // Condition effects: add "Cego" → attack rolls use disadvantage
+  await page
+    .getByRole("combobox", { name: "Adicionar condição" })
+    .selectOption("cego");
+  await page.getByRole("button", { name: "Adicionar condição" }).click();
+  await expect(
+    page.getByText("Ataques com desvantagem", { exact: true }),
+  ).toBeVisible();
+  await roll.click();
+  await expect(page.getByText(/d20 \[\d+, \d+\]→\d+.*com desvantagem/)).toBeVisible();
+
+  // Concentration: condition shows the save button and it rolls inline
+  await page
+    .getByRole("combobox", { name: "Adicionar condição" })
+    .selectOption("concentracao");
+  await page.getByRole("button", { name: "Adicionar condição" }).click();
+  await page.getByRole("button", { name: "Teste de concentração" }).click();
+  await expect(page.getByText(/1d20 \d+ [+-]\d+ →/)).toBeVisible();
+
   // Proficiencies show catalog display names, never raw ids
   const profCard = page.locator("section").filter({ hasText: "Proficiências" });
   await expect(profCard.getByText("Besta Leve", { exact: true })).toBeVisible();
